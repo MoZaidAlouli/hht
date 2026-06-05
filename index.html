@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OPERATION: HIBA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <canvas id="matrixCanvas"></canvas>
+  <div class="scan-line"></div>
+
+  <!-- ══ BOOT SCREEN ══ -->
+  <div class="screen active" id="screen-boot">
+    <div class="terminal-window boot-terminal">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">SYSTEM — CLASSIFIED ACCESS</span>
+      </div>
+      <div class="terminal-body" id="boot-output">
+        <div class="boot-line" style="animation-delay:0.1s">$ Initializing secure channel...</div>
+        <div class="boot-line" style="animation-delay:0.7s">$ Verifying agent identity...</div>
+        <div class="boot-line" style="animation-delay:1.4s">$ <span class="accent">ACCESS GRANTED</span></div>
+        <div class="boot-line" style="animation-delay:2.0s">$ Loading dossier: <span class="accent-blue">OPERATION_HIBA.enc</span></div>
+        <div class="boot-line" style="animation-delay:2.7s">$ Dossier decrypted. 10 modules detected.</div>
+        <div class="boot-line" style="animation-delay:3.4s">$ Warning: each module's answer feeds the next.</div>
+        <div class="boot-line" style="animation-delay:4.1s">$ Complete all 10 to unlock the final transmission.</div>
+        <div class="boot-line" style="animation-delay:4.9s">—</div>
+        <button class="btn-boot" style="animation-delay:5.5s" onclick="goTo('screen-intro')">[ INITIATE MISSION ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ INTRO ══ -->
+  <div class="screen" id="screen-intro">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MISSION BRIEF — EYES ONLY</span>
+      </div>
+      <div class="terminal-body">
+        <div class="dossier-header">
+          <div class="dossier-label">FILE / CASE NO.</div>
+          <div class="dossier-number">OP-H1B4</div>
+          <div class="dossier-label">STATUS: <span class="accent">ACTIVE</span></div>
+        </div>
+        <p class="narr">Ten intelligence modules. Ten answers. Each one gives you a piece of a word. The final module reveals everything.</p>
+        <p class="narr muted">You are not expected to know the answers. You're expected to <em>find</em> them. Think carefully. Read everything. Nothing is decoration.</p>
+        <div class="warn-box">
+          ⚠ Modules are connected. Do not skip. Do not guess randomly.<br/>
+          A hint system is available — use it without shame.
+        </div>
+        <button class="btn-primary" onclick="goTo('screen-1')">BEGIN MODULE 01 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 1 — GEOLOCATION ══ -->
+  <div class="screen" id="screen-1">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 01 / 10 — GEOLOCATION</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › GEO-IDENTIFICATION</div>
+        <h2 class="module-title">Identify the Location</h2>
+        <p class="narr">A suspect profile was flagged. The bio contains a hidden location reference. Real investigators extract geographical intel from seemingly ordinary text.</p>
+        <p class="narr muted">Read the profile below. Find the location. Give the city name.</p>
+
+        <div class="profile-card">
+          <div class="profile-top">
+            <div class="profile-avatar">▣</div>
+            <div>
+              <div class="profile-handle">@the.quiet.archive</div>
+              <div class="profile-name-sub">Noor Al-Salam · 47 posts</div>
+            </div>
+          </div>
+          <div class="profile-bio">
+            writer. collector of unfinished things.<br/>
+            my first word was "baba".<br/>
+            favorite number: <span class="hl">seven</span>. favorite season: the one before winter.<br/>
+            <span class="hl">"I was born in the city of roses."</span><br/>
+            📍 somewhere between 2am and dawn
+          </div>
+        </div>
+
+        <div class="clue-block">
+          <span class="clue-tag">› ANALYST NOTE</span><br/>
+          The phrase <em>"city of roses"</em> is not poetic — it is a real geographic nickname. Which city on Earth is formally known as the city of roses? That is your answer.
+        </div>
+
+        <input class="term-input" id="input-1" type="text" placeholder="city name..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(1)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(1)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-1">Located in Bulgaria. It sits in the Valley of Roses. Famous for rose oil and rose water export. The city's name starts with K.</div>
+        <div class="feedback hidden" id="feedback-1"></div>
+        <div class="key-collect hidden" id="key-1">
+          <span class="key-label">KEY FRAGMENT 01 ACQUIRED</span>
+          <span class="key-value" id="kv-1"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 2 — IMAGE ANALYSIS ══ -->
+  <div class="screen" id="screen-2">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 02 / 10 — IMAGE ANALYSIS</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › PHOTO FORENSICS</div>
+        <h2 class="module-title">Reverse-Locate the Photo</h2>
+        <p class="narr">The suspect posted a photo with no location tag. Investigators use visual clues <em>inside</em> an image to determine where it was taken. This is called geolocation by imagery.</p>
+        <p class="narr muted">Examine the elements below. Every detail is a data point. Cross-reference them.</p>
+
+        <div class="photo-frame">
+          <div class="photo-label">📎 IMG_8842.jpg — no EXIF location — uploaded 3 weeks ago</div>
+          <div class="photo-elements">
+            <div class="photo-el"><span class="el-icon">🗼</span> A latticed iron tower visible in the far background</div>
+            <div class="photo-el"><span class="el-icon">🪧</span> Street sign on a stone wall: <strong class="hl">"Rue de Rivoli"</strong></div>
+            <div class="photo-el"><span class="el-icon">🥐</span> Table with coffee and a croissant</div>
+            <div class="photo-el"><span class="el-icon">🚲</span> Vélib' shared bicycle locked to a railing</div>
+            <div class="photo-el"><span class="el-icon">🌦</span> Wet cobblestones — recent light rain</div>
+          </div>
+        </div>
+
+        <div class="clue-block">
+          <span class="clue-tag">› ANALYST NOTE</span><br/>
+          You don't need to know all of these. Any two of these clues together confirm the city. "Rue de Rivoli" is a real street. Vélib' is a real bike-share program. The tower is iconic. What city?
+        </div>
+
+        <input class="term-input" id="input-2" type="text" placeholder="city name..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(2)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(2)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-2">Rue de Rivoli is a famous avenue in this city. The iron tower with a lattice structure is one of the most recognized landmarks on Earth. The city is also called the City of Light.</div>
+        <div class="feedback hidden" id="feedback-2"></div>
+        <div class="key-collect hidden" id="key-2">
+          <span class="key-label">KEY FRAGMENT 02 ACQUIRED</span>
+          <span class="key-value" id="kv-2"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 3 — RADIO TUNER ══ -->
+  <div class="screen" id="screen-3">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 03 / 10 — RADIO DECRYPTION</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › SIGNAL INTELLIGENCE</div>
+        <h2 class="module-title">Intercept and Tune the Frequency</h2>
+        <p class="narr">An encrypted radio transmission was intercepted. To extract the identity code, you must tune the receiver to the correct frequency. The static will clear when you reach the target.</p>
+        <p class="narr muted">The frequency is hidden: take the number of posts in Noor's profile (47) and add it to 57.0. Appending them gives: <strong>104.7 MHz</strong>.</p>
+
+        <div class="radio-tuner-container">
+          <div class="radio-display">
+            <div class="freq-number"><span id="freq-val">88.0</span><span class="freq-unit">MHz</span></div>
+            <div class="signal-status noise" id="signal-status">› NO SIGNAL (STATIC)</div>
+          </div>
+          <div class="tuner-slider-wrapper">
+            <input type="range" class="tuner-range" id="tuner-slider" min="88.0" max="108.0" step="0.1" value="88.0" />
+            <div class="tuner-scale">
+              <span>88</span><span>92</span><span>96</span><span>100</span><span>104</span><span>108</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="clue-block">
+          <span class="clue-tag">› ANALYST NOTE</span><br/>
+          Drag the tuner slider until the frequency display reads <strong>104.7 MHz</strong>. When the transmission stabilizes, write down the decrypted identity code.
+        </div>
+
+        <input class="term-input" id="input-3" type="text" placeholder="decrypted identity code..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(3)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(3)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-3">Slide the dial to exactly 104.7 MHz. The receiver will lock onto the signal and reveal the identity. Type it in the input and submit. (Hint: it's a four-letter name.)</div>
+        <div class="feedback hidden" id="feedback-3"></div>
+        <div class="key-collect hidden" id="key-3">
+          <span class="key-label">KEY FRAGMENT 03 ACQUIRED</span>
+          <span class="key-value" id="kv-3"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 4 — CAESAR SLIDER ══ -->
+  <div class="screen" id="screen-4">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 04 / 10 — CRYPTOGRAPHY</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › CAESAR SLIDER</div>
+        <h2 class="module-title">Align the Decryption Grid</h2>
+        <p class="narr">We intercepted two encrypted signals. Instead of manual translation, use this interactive shift grid to find the message. Drag the slider to adjust the shift offset in real-time.</p>
+        
+        <div class="caesar-container">
+          <div class="shift-display-panel">
+            <div class="cw-label">SIGNAL A — SHIFT OFFSET: <span id="shift-offset-a" class="wave-val-txt">0</span></div>
+            <div class="shift-letters-row" id="letters-a">
+              <div class="cl-box"><span class="cl-orig">O</span><span class="cl-shifted" data-orig="O">O</span></div>
+              <div class="cl-box"><span class="cl-orig">D</span><span class="cl-shifted" data-orig="D">D</span></div>
+              <div class="cl-box"><span class="cl-orig">Q</span><span class="cl-shifted" data-orig="Q">Q</span></div>
+              <div class="cl-box"><span class="cl-orig">H</span><span class="cl-shifted" data-orig="H">H</span></div>
+            </div>
+          </div>
+          <div class="shift-display-panel">
+            <div class="cw-label">SIGNAL B — SHIFT OFFSET: <span id="shift-offset-b" class="wave-val-txt">0</span></div>
+            <div class="shift-letters-row" id="letters-b">
+              <div class="cl-box"><span class="cl-orig">M</span><span class="cl-shifted" data-orig="M">M</span></div>
+              <div class="cl-box"><span class="cl-orig">V</span><span class="cl-shifted" data-orig="V">V</span></div>
+              <div class="cl-box"><span class="cl-orig">Y</span><span class="cl-shifted" data-orig="Y">Y</span></div>
+              <div class="cl-box"><span class="cl-orig">L</span><span class="cl-shifted" data-orig="L">L</span></div>
+              <div class="cl-box"><span class="cl-orig">C</span><span class="cl-shifted" data-orig="C">C</span></div>
+              <div class="cl-box"><span class="cl-orig">L</span><span class="cl-shifted" data-orig="L">L</span></div>
+              <div class="cl-box"><span class="cl-orig">Y</span><span class="cl-shifted" data-orig="Y">Y</span></div>
+            </div>
+          </div>
+          <div class="tuner-slider-wrapper">
+            <input type="range" class="tuner-range" id="caesar-slider" min="-25" max="25" value="0" step="1" />
+            <div class="tuner-scale">
+              <span>-25</span><span>-15</span><span>-5</span><span>0</span><span>+5</span><span>+15</span><span>+25</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="clue-block">
+          <span class="clue-tag">› ANALYST NOTE</span><br/>
+          One of the signals contains a real word indicating a deep timeline. Slide the dial to find where it becomes readable. Submit only that word.
+        </div>
+
+        <input class="term-input" id="input-4" type="text" placeholder="the decoded word..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(4)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(4)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-4">Slide to -3 to read Signal A (LANE). Slide to -7 to read Signal B. Look at the letter boxes for Signal B. One shifts to a common road name, one shifts to a word about duration. Submit the latter.</div>
+        <div class="feedback hidden" id="feedback-4"></div>
+        <div class="key-collect hidden" id="key-4">
+          <span class="key-label">KEY FRAGMENT 04 ACQUIRED</span>
+          <span class="key-value" id="kv-4"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 5 — PATTERN LOCK & CHAT ══ -->
+  <div class="screen" id="screen-5">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 05 / 10 — PATTERN BYPASS</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › MOBILE ATTRIBUTION</div>
+        <h2 class="module-title" id="m5-title">Unlock Chat Logs</h2>
+        
+        <!-- STEP 1: PATTERN GRID (Unlocks chat logs) -->
+        <div id="m5-lock-wrapper">
+          <p class="narr">The suspect's phone was recovered but it's protected by a pattern lock screen. You must bypass the grid to read their last messages.</p>
+          <div class="pattern-lock-container">
+            <div class="pattern-grid-wrapper">
+              <canvas id="pattern-canvas" width="240" height="240"></canvas>
+              <div class="pattern-grid" id="pattern-grid-nodes">
+                <div class="pattern-node" data-index="0"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="1"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="2"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="3"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="4"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="5"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="6"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="7"><div class="pattern-node-dot"></div></div>
+                <div class="pattern-node" data-index="8"><div class="pattern-node-dot"></div></div>
+              </div>
+            </div>
+            <div class="freq-unit">Click and drag nodes to connect. Draw the letter "H".</div>
+          </div>
+          <div class="clue-block">
+            <span class="clue-tag">› LOCK NOTE</span><br/>
+            Draw the letter <strong>H</strong> by connecting: Top-Left ➔ Mid-Left ➔ Bottom-Left, then Mid-Left ➔ Center ➔ Mid-Right, then Top-Right ➔ Mid-Right ➔ Bottom-Right.
+          </div>
+        </div>
+
+        <!-- STEP 2: CHAT THREAD (Hidden until unlocked) -->
+        <div id="m5-chat-wrapper" class="hidden">
+          <p class="narr">The lock was bypassed. Chat thread decrypted. Read the conversation below to extract the final confirmation word.</p>
+          <div class="chat-thread" id="chat-thread-container">
+            <div class="chat-label">📨 RECOVERED THREAD — WhatsApp · contact: "S 🌙"</div>
+            <!-- Chat items populated by JS -->
+          </div>
+          
+          <div class="clue-block">
+            <span class="clue-tag">› ANALYST NOTE</span><br/>
+            One word appears exactly twice in this thread — sent by the same person, at the start and at the very end. The second time, it answers a promise. Write down that word.
+          </div>
+
+          <input class="term-input" id="input-5" type="text" placeholder="the repeated word..." autocomplete="off" spellcheck="false" />
+          <div class="btn-row">
+            <button class="btn-hint" onclick="showHint(5)">[ REQUEST HINT ]</button>
+            <button class="btn-primary" onclick="check(5)">SUBMIT ↵</button>
+          </div>
+        </div>
+
+        <div class="hint-box hidden" id="hint-5">For the lock: connect nodes 0-3-6, then 3-4-5, then 2-5-8. For the chat: look at the word sent by "me" at the very beginning and repeated at the end. It's eight letters, starts with T.</div>
+        <div class="feedback hidden" id="feedback-5"></div>
+        <div class="key-collect hidden" id="key-5">
+          <span class="key-label">KEY FRAGMENT 05 ACQUIRED</span>
+          <span class="key-value" id="kv-5"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 6 — WAVEFORM ALIGNMENT ══ -->
+  <div class="screen" id="screen-6">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 06 / 10 — WAVEFORM ALIGNMENT</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › AUDIO FORENSICS</div>
+        <h2 class="module-title">Stabilize the Voiceprint</h2>
+        <p class="narr">We intercepted a voice transmission, but the signal phase and frequency are out of alignment. You must overlay the blue intercepted wave with the green reference wave.</p>
+
+        <div class="waveform-container">
+          <div class="waveform-screen">
+            <canvas class="waveform-canvas" id="waveform-canvas"></canvas>
+            <div class="sync-meter">SYNC: <span id="sync-val" class="sync-val">0%</span></div>
+          </div>
+          <div class="wave-controls">
+            <div class="wave-control-row">
+              <div class="wave-lbl-row"><span>PHASE (HORIZONTAL)</span><span class="wave-val-txt" id="val-phase">0</span></div>
+              <input type="range" class="tuner-range" id="wave-phase" min="0" max="360" value="45" />
+            </div>
+            <div class="wave-control-row">
+              <div class="wave-lbl-row"><span>FREQUENCY (WAVELENGTH)</span><span class="wave-val-txt" id="val-freq">0</span></div>
+              <input type="range" class="tuner-range" id="wave-freq" min="5" max="50" value="15" />
+            </div>
+            <div class="wave-control-row">
+              <div class="wave-lbl-row"><span>AMPLITUDE (HEIGHT)</span><span class="wave-val-txt" id="val-amp">0</span></div>
+              <input type="range" class="tuner-range" id="wave-amp" min="10" max="80" value="20" />
+            </div>
+          </div>
+        </div>
+
+        <div class="clue-block" id="waveform-status-box">
+          <span class="clue-tag">› MISSION DIRECTIVE</span><br/>
+          Adjust the Phase, Frequency, and Amplitude sliders until the sync percentage is 95% or higher. The voice memo will then decode and show the keyphrase.
+        </div>
+
+        <input class="term-input" id="input-6" type="text" placeholder="decoded phrase..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(6)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(6)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-6">Align the blue wave with the green target. Target settings: Phase near 180, Frequency near 30, Amplitude near 50. Once they overlap perfectly, the sync display lights up and shows the text: "home". Type that here!</div>
+        <div class="feedback hidden" id="feedback-6"></div>
+        <div class="key-collect hidden" id="key-6">
+          <span class="key-label">KEY FRAGMENT 06 ACQUIRED</span>
+          <span class="key-value" id="kv-6"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 7 — BASE64 MATRIX DECRYPTOR ══ -->
+  <div class="screen" id="screen-7">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 07 / 10 — BASE64 MATRIX SECURE</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › BASE64 CORE</div>
+        <h2 class="module-title">Decrypt System Payload</h2>
+        <p class="narr">We intercepted a base64 encoded byte array from the system core. You must load this string into our local matrix terminal to decrypt a small snippet of the final transmission.</p>
+
+        <div class="b64-matrix-terminal">
+          <div class="b64-block">
+            <div class="b64-label">ENCODED VALUE:</div>
+            <div class="b64-string">YWx3YXlzIHlvdXJz</div>
+          </div>
+          <div class="b64-matrix-screen">
+            <div class="matrix-glow-text" id="matrix-decode-display">SYSTEM_IDLE: AWAITING_DECRYPTION</div>
+            <div class="matrix-decode-progress" id="matrix-decode-progress"></div>
+          </div>
+          <button class="btn-decode" id="btn-run-matrix-decode">RUN DECRYPTION ENGINE</button>
+        </div>
+
+        <div class="clue-block">
+          <span class="clue-tag">› MISSION NOTE</span><br/>
+          Click the "RUN DECRYPTION ENGINE" button to run our in-terminal base64 decryptor. Copy the resolved message and type it below.
+        </div>
+
+        <input class="term-input" id="input-7" type="text" placeholder="decoded payload..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(7)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(7)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-7">Click the decryption button. The system will cycle characters and reveal the phrase: "always yours". Type that into the text input.</div>
+        <div class="feedback hidden" id="feedback-7"></div>
+        <div class="key-collect hidden" id="key-7">
+          <span class="key-label">KEY FRAGMENT 07 ACQUIRED</span>
+          <span class="key-value" id="kv-7"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 8 — STAR MAP CONSTELLATION ══ -->
+  <div class="screen" id="screen-8">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 08 / 10 — STARLIGHT NAVIGATOR</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › ASTROMETRY</div>
+        <h2 class="module-title">Map the Cosmic Constellation</h2>
+        <p class="narr">An ancient navigation route was mapped to a constellation. You must trace the star coordinates in the correct sequence to reveal the central cosmic coordinate.</p>
+
+        <div class="starry-mapper-container">
+          <div class="starry-screen-wrapper">
+            <canvas id="star-canvas" width="240" height="240"></canvas>
+            <div class="star-nodes-layer" id="star-nodes-layer">
+              <div class="star-node" data-star="0" style="left:120px; top:30px;"><div class="star-node-dot"></div><div class="star-node-num">1. Polaris</div></div>
+              <div class="star-node" data-star="1" style="left:50px; top:90px;"><div class="star-node-dot"></div><div class="star-node-num">2. Rigel</div></div>
+              <div class="star-node" data-star="2" style="left:190px; top:90px;"><div class="star-node-dot"></div><div class="star-node-num">5. Vega</div></div>
+              <div class="star-node" data-star="3" style="left:80px; top:180px;"><div class="star-node-dot"></div><div class="star-node-num">3. Sirius</div></div>
+              <div class="star-node" data-star="4" style="left:160px; top:180px;"><div class="star-node-dot"></div><div class="star-node-num">4. Capella</div></div>
+            </div>
+          </div>
+          <div class="freq-unit">Click the stars sequentially: Polaris ➔ Rigel ➔ Sirius ➔ Capella ➔ Vega ➔ Polaris.</div>
+        </div>
+
+        <div class="clue-block" id="star-status-box">
+          <span class="clue-tag">› MISSION NOTE</span><br/>
+          Click the stars in order of their label numbers (1 ➔ 2 ➔ 3 ➔ 4 ➔ 5 ➔ 1). Connecting them correctly will draw the navigation star and reveal the passcode word.
+        </div>
+
+        <input class="term-input" id="input-8" type="text" placeholder="the passcode word..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(8)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(8)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-8">Click 1 (Polaris), then 2 (Rigel), then 3 (Sirius), then 4 (Capella), then 5 (Vega), then click 1 (Polaris) again to close the path. The completed lines will turn green and output "universe". Type it here!</div>
+        <div class="feedback hidden" id="feedback-8"></div>
+        <div class="key-collect hidden" id="key-8">
+          <span class="key-label">KEY FRAGMENT 08 ACQUIRED</span>
+          <span class="key-value" id="kv-8"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 9 — GRAPHIC EQUALIZER ══ -->
+  <div class="screen" id="screen-9">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 09 / 10 — SIGNAL EQUALIZER</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › FREQUENCY MATCH</div>
+        <h2 class="module-title">Harmonize the Sound Waves</h2>
+        <p class="narr">An audio recording of the transmission has been distorted. To extract the keyword, balance the faders on our graphic equalizer to match the target frequency decibels.</p>
+
+        <div class="eq-container">
+          <div class="eq-channels">
+            <div class="eq-channel">
+              <div class="eq-lbl-row"><span class="eq-name">BASS (100Hz)</span><span class="eq-val-txt" id="eq-val-0">0%</span></div>
+              <div class="eq-slider-row">
+                <input type="range" class="tuner-range eq-slider" data-idx="0" min="0" max="100" value="20" />
+                <span class="eq-target-marker" id="eq-tgt-0">Target: 70%</span>
+              </div>
+            </div>
+            <div class="eq-channel">
+              <div class="eq-lbl-row"><span class="eq-name">LOW-MID (400Hz)</span><span class="eq-val-txt" id="eq-val-1">0%</span></div>
+              <div class="eq-slider-row">
+                <input type="range" class="tuner-range eq-slider" data-idx="1" min="0" max="100" value="80" />
+                <span class="eq-target-marker" id="eq-tgt-1">Target: 30%</span>
+              </div>
+            </div>
+            <div class="eq-channel">
+              <div class="eq-lbl-row"><span class="eq-name">MIDRANGE (1kHz)</span><span class="eq-val-txt" id="eq-val-2">0%</span></div>
+              <div class="eq-slider-row">
+                <input type="range" class="tuner-range eq-slider" data-idx="2" min="0" max="100" value="10" />
+                <span class="eq-target-marker" id="eq-tgt-2">Target: 50%</span>
+              </div>
+            </div>
+            <div class="eq-channel">
+              <div class="eq-lbl-row"><span class="eq-name">HIGH-MID (4kHz)</span><span class="eq-val-txt" id="eq-val-3">0%</span></div>
+              <div class="eq-slider-row">
+                <input type="range" class="tuner-range eq-slider" data-idx="3" min="0" max="100" value="30" />
+                <span class="eq-target-marker" id="eq-tgt-3">Target: 80%</span>
+              </div>
+            </div>
+            <div class="eq-channel">
+              <div class="eq-lbl-row"><span class="eq-name">TREBLE (12kHz)</span><span class="eq-val-txt" id="eq-val-4">0%</span></div>
+              <div class="eq-slider-row">
+                <input type="range" class="tuner-range eq-slider" data-idx="4" min="0" max="100" value="90" />
+                <span class="eq-target-marker" id="eq-tgt-4">Target: 40%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="clue-block" id="eq-status-box">
+          <span class="clue-tag">› SYSTEM STATUS</span><br/>
+          Adjust faders until all channels say "LOCKED" (within 5% of their targets). A harmonic word will then decrypt.
+        </div>
+
+        <input class="term-input" id="input-9" type="text" placeholder="the harmonic word..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(9)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(9)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-9">Match faders: Bass ➔ 70, Low-Mid ➔ 30, Mid ➔ 50, High-Mid ➔ 80, Treble ➔ 40. Once all lock green, the status box will decrypt and display "symphony". Type it here!</div>
+        <div class="feedback hidden" id="feedback-9"></div>
+        <div class="key-collect hidden" id="key-9">
+          <span class="key-label">KEY FRAGMENT 09 ACQUIRED</span>
+          <span class="key-value" id="kv-9"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 10 — MASTER KEY RING ══ -->
+  <div class="screen" id="screen-10">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 10 / 10 — KEY DECRYPTION RING</span>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">SYSTEM › MASTER OVERRIDE</div>
+        <h2 class="module-title">Assemble the Master Key</h2>
+        <p class="narr">The final file is locked by a nine-part cryptographic seal. You have collected all nine key fragments. You must insert them in the exact chronological order of their story.</p>
+
+        <div class="keyring-container">
+          <div class="keyring-slots" id="keyring-slots-container">
+            <div class="keyring-slot" data-index="0"><span class="slot-num">MOD-01</span><span class="slot-val" id="slot-0">???</span></div>
+            <div class="keyring-slot" data-index="1"><span class="slot-num">MOD-02</span><span class="slot-val" id="slot-1">???</span></div>
+            <div class="keyring-slot" data-index="2"><span class="slot-num">MOD-03</span><span class="slot-val" id="slot-2">???</span></div>
+            <div class="keyring-slot" data-index="3"><span class="slot-num">MOD-04</span><span class="slot-val" id="slot-3">???</span></div>
+            <div class="keyring-slot" data-index="4"><span class="slot-num">MOD-05</span><span class="slot-val" id="slot-4">???</span></div>
+            <div class="keyring-slot" data-index="5"><span class="slot-num">MOD-06</span><span class="slot-val" id="slot-5">???</span></div>
+            <div class="keyring-slot" data-index="6"><span class="slot-num">MOD-07</span><span class="slot-val" id="slot-6">???</span></div>
+            <div class="keyring-slot" data-index="7"><span class="slot-num">MOD-08</span><span class="slot-val" id="slot-7">???</span></div>
+            <div class="keyring-slot" data-index="8"><span class="slot-num">MOD-09</span><span class="slot-val" id="slot-8">???</span></div>
+          </div>
+          <div class="keyring-fragments" id="keyring-frags-container">
+            <!-- Fragment buttons populated by JS -->
+          </div>
+          <div class="keyring-actions">
+            <button class="btn-hint" id="btn-keyring-reset">[ RESET SEQUENCE ]</button>
+            <button class="btn-primary" id="btn-keyring-submit" disabled>OVERRIDE LOCK</button>
+          </div>
+        </div>
+
+        <div class="clue-block">
+          <span class="clue-tag">› MISSION NOTE</span><br/>
+          Click on the fragment buttons below to place them into the slots from MOD-01 to MOD-09. The order is determined by the modules you cleared: Kazanlak, Paris, Hiba, Forever, Together, Home, Always Yours, Universe, Symphony.
+        </div>
+
+        <div class="feedback hidden" id="feedback-10"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ FINAL TRANSMISSION ══ -->
+  <div class="screen" id="screen-final">
+    <div class="final-rain" id="finalRain"></div>
+    <div class="terminal-window final-terminal">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">TRANSMISSION UNLOCKED — OP-H1B4 COMPLETE</span>
+      </div>
+      <div class="terminal-body">
+        <div class="final-key-row" id="final-keys-display"></div>
+        <div class="final-divider"></div>
+        <div class="final-msg-block">
+          <div class="final-line" style="animation-delay:0.5s">Here's the truth I couldn't hide inside a puzzle.</div>
+          <div class="final-line" style="animation-delay:1.2s">I miss you in my bones. Not in a pretty way. In the way that makes ordinary days feel heavy. In the way where I see something dumb and reach for my phone to tell you, and then just stop, because telling you isn't the same as you being here.</div>
+          <div class="final-line" style="animation-delay:2.2s">You solved everything I built.</div>
+          <div class="final-line" style="animation-delay:2.9s">But I still can't solve the distance.</div>
+          <div class="final-line accent-glow" style="animation-delay:3.8s">I love you. I'm tired of saying it to a screen.</div>
+          <div class="final-line muted-line" style="animation-delay:4.5s">That's it. That's the reward.</div>
+          <div class="final-sign" style="animation-delay:5.3s">— Always yours 🌹</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
