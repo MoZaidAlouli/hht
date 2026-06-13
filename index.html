@@ -26,9 +26,9 @@
         <div class="boot-line" style="animation-delay:0.7s">$ Verifying agent identity...</div>
         <div class="boot-line" style="animation-delay:1.4s">$ <span class="accent">ACCESS GRANTED</span></div>
         <div class="boot-line" style="animation-delay:2.0s">$ Loading dossier: <span class="accent-blue">OPERATION_HIBA.enc</span></div>
-        <div class="boot-line" style="animation-delay:2.7s">$ Dossier decrypted. 10 modules detected.</div>
+        <div class="boot-line" style="animation-delay:2.7s">$ Dossier decrypted. 20 modules detected.</div>
         <div class="boot-line" style="animation-delay:3.4s">$ Warning: each module's answer feeds the next.</div>
-        <div class="boot-line" style="animation-delay:4.1s">$ Complete all 10 to unlock the final transmission.</div>
+        <div class="boot-line" style="animation-delay:4.1s">$ Complete all 20 to unlock the final transmission.</div>
         <div class="boot-line" style="animation-delay:4.9s">—</div>
         <button class="btn-boot" style="animation-delay:5.5s" onclick="goTo('screen-intro')">[ INITIATE MISSION ]</button>
       </div>
@@ -41,6 +41,7 @@
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
         <span class="terminal-title">MISSION BRIEF — EYES ONLY</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="dossier-header">
@@ -48,7 +49,7 @@
           <div class="dossier-number">OP-H1B4</div>
           <div class="dossier-label">STATUS: <span class="accent">ACTIVE</span></div>
         </div>
-        <p class="narr">Ten intelligence modules. Ten answers. Each one gives you a piece of a word. The final module reveals everything.</p>
+        <p class="narr">Twenty intelligence modules. Twenty answers. Each one gives you a piece of a word. The final module reveals everything.</p>
         <p class="narr muted">You are not expected to know the answers. You're expected to <em>find</em> them. Think carefully. Read everything. Nothing is decoration.</p>
         <div class="warn-box">
           ⚠ Modules are connected. Do not skip. Do not guess randomly.<br/>
@@ -64,7 +65,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 01 / 10 — GEOLOCATION</span>
+        <span class="terminal-title">MODULE 01 / 20 — GEOLOCATION</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">OSINT › GEO-IDENTIFICATION</div>
@@ -114,7 +116,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 02 / 10 — IMAGE ANALYSIS</span>
+        <span class="terminal-title">MODULE 02 / 20 — IMAGE ANALYSIS</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">OSINT › PHOTO FORENSICS</div>
@@ -158,7 +161,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 03 / 10 — RADIO DECRYPTION</span>
+        <span class="terminal-title">MODULE 03 / 20 — RADIO DECRYPTION</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">OSINT › SIGNAL INTELLIGENCE</div>
@@ -204,7 +208,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 04 / 10 — CRYPTOGRAPHY</span>
+        <span class="terminal-title">MODULE 04 / 20 — CRYPTOGRAPHY</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">CRYPTO › CAESAR SLIDER</div>
@@ -266,7 +271,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 05 / 10 — PATTERN BYPASS</span>
+        <span class="terminal-title">MODULE 05 / 20 — PATTERN BYPASS</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">OSINT › MOBILE ATTRIBUTION</div>
@@ -333,7 +339,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 06 / 10 — WAVEFORM ALIGNMENT</span>
+        <span class="terminal-title">MODULE 06 / 20 — WAVEFORM ALIGNMENT</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">CRYPTO › AUDIO FORENSICS</div>
@@ -386,7 +393,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 07 / 10 — BASE64 MATRIX SECURE</span>
+        <span class="terminal-title">MODULE 07 / 20 — BASE64 MATRIX SECURE</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">CRYPTO › BASE64 CORE</div>
@@ -430,7 +438,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 08 / 10 — STARLIGHT NAVIGATOR</span>
+        <span class="terminal-title">MODULE 08 / 20 — STARLIGHT NAVIGATOR</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">OSINT › ASTROMETRY</div>
@@ -476,7 +485,8 @@
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 09 / 10 — SIGNAL EQUALIZER</span>
+        <span class="terminal-title">MODULE 09 / 20 — SIGNAL EQUALIZER</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">OSINT › FREQUENCY MATCH</div>
@@ -543,17 +553,620 @@
     </div>
   </div>
 
-  <!-- ══ MODULE 10 — MASTER KEY RING ══ -->
+  <!-- ══ MODULE 10 — MORSE CODE TRANSCEIVER ══ -->
   <div class="screen" id="screen-10">
     <div class="terminal-window">
       <div class="terminal-bar">
         <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-        <span class="terminal-title">MODULE 10 / 10 — KEY DECRYPTION RING</span>
+        <span class="terminal-title">MODULE 10 / 20 — MORSE DECRYPTION</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › SIGNAL INTELLIGENCE</div>
+        <h2 class="module-title">Decrypt the Morse Code Beacon</h2>
+        <p class="narr">A deep space tracking station has intercepted a visual and audio Morse code beacon. The signal loops continuously. Decode the characters to reveal the keyword.</p>
+        <p class="narr muted">Use the visual beacon or toggle the audio channel to hear the transmission. Adjust the speed (WPM) if the code is playing too fast.</p>
+
+        <div class="morse-container">
+          <div class="morse-beacon-wrapper">
+            <div class="morse-light" id="morse-light"></div>
+            <div class="morse-controls-row">
+              <button class="btn-primary" id="btn-morse-play-pause">PLAY TRANSMISSION</button>
+              <button class="btn-hint" id="btn-morse-audio-toggle">ENABLE AUDIO (BEEP)</button>
+            </div>
+          </div>
+          <div class="tuner-slider-wrapper" style="margin-top: 14px;">
+            <div class="wave-lbl-row"><span>TRANSMISSION SPEED (WPM)</span><span class="wave-val-txt" id="morse-wpm-txt">12 WPM</span></div>
+            <input type="range" class="tuner-range" id="morse-speed-slider" min="5" max="25" value="12" step="1" />
+          </div>
+          
+          <div class="morse-cheat-sheet">
+            <div class="morse-sheet-title">INTERNATIONAL MORSE CODE REFERENCE</div>
+            <div class="morse-sheet-grid">
+              <div><strong>A</strong> •—</div><div><strong>B</strong> —•••</div><div><strong>C</strong> —•—•</div><div><strong>D</strong> —••</div>
+              <div><strong>E</strong> •</div><div><strong>F</strong> ••—•</div><div><strong>G</strong> ——•</div><div><strong>H</strong> ••••</div>
+              <div><strong>I</strong> ••</div><div><strong>J</strong> •———</div><div><strong>K</strong> —•—</div><div><strong>L</strong> •—••</div>
+              <div><strong>M</strong> ——</div><div><strong>N</strong> —•</div><div><strong>O</strong> ———</div><div><strong>P</strong> •——•</div>
+              <div><strong>Q</strong> ——•—</div><div><strong>R</strong> •—•</div><div><strong>S</strong> •••</div><div><strong>T</strong> —</div>
+              <div><strong>U</strong> ••—</div><div><strong>V</strong> •••—</div><div><strong>W</strong> •——</div><div><strong>X</strong> —••—</div>
+              <div><strong>Y</strong> —•——</div><div><strong>Z</strong> ——••</div>
+            </div>
+          </div>
+        </div>
+
+        <input class="term-input" id="input-10" type="text" placeholder="decoded keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(10)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(10)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-10">Translate the visual flashes or beeps. The code sequence is: •——• (P)  •—• (R)  ——— (O)  —— (M)  •• (I)  ••• (S)  • (E). Type the resulting word "promise" in the input field.</div>
+        <div class="feedback hidden" id="feedback-10"></div>
+        <div class="key-collect hidden" id="key-10">
+          <span class="key-label">KEY FRAGMENT 10 ACQUIRED</span>
+          <span class="key-value" id="kv-10"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 11 — ENIGMA ROTOR SIMULATOR ══ -->
+  <div class="screen" id="screen-11">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 11 / 20 — ENIGMA ROTOR SIMULATOR</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › ROTOR MACHINE</div>
+        <h2 class="module-title">Align the Enigma Rotors</h2>
+        <p class="narr">We intercepted a scrambled intercept message. You must configure the mechanical rotor dials to align the internal electrical paths. Once the rotors are in their correct settings, the scrambled payload will decrypt.</p>
+        <p class="narr muted">Use the buttons below each rotor to spin the character dial. Read the analyst notes for the code parameters.</p>
+
+        <div class="enigma-container">
+          <div class="enigma-display-panel">
+            <div class="cw-label">SCRAMBLED INTERCEPT: <strong class="hl" id="enigma-ciphertext">J P F Y L N H</strong></div>
+            <div class="do-label" style="margin-top: 8px;">DECRYPTED TEXT:</div>
+            <div class="enigma-decrypted-text" id="enigma-decrypted-val">GIBBERISH</div>
+          </div>
+          
+          <div class="enigma-rotors-wrapper">
+            <div class="enigma-rotor">
+              <div class="rotor-label">ROTOR I</div>
+              <button class="rotor-btn-up" onclick="rotateRotor(0, 1)">▲</button>
+              <div class="rotor-val" id="rotor-0-val">A</div>
+              <button class="rotor-btn-down" onclick="rotateRotor(0, -1)">▼</button>
+            </div>
+            <div class="enigma-rotor">
+              <div class="rotor-label">ROTOR II</div>
+              <button class="rotor-btn-up" onclick="rotateRotor(1, 1)">▲</button>
+              <div class="rotor-val" id="rotor-1-val">A</div>
+              <button class="rotor-btn-down" onclick="rotateRotor(1, -1)">▼</button>
+            </div>
+            <div class="enigma-rotor">
+              <div class="rotor-label">ROTOR III</div>
+              <button class="rotor-btn-up" onclick="rotateRotor(2, 1)">▲</button>
+              <div class="rotor-val" id="rotor-2-val">A</div>
+              <button class="rotor-btn-down" onclick="rotateRotor(2, -1)">▼</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="clue-block">
+          <span class="clue-tag">› ANALYST NOTE</span><br/>
+          Rotor key settings are hidden in Noor's diary: "The first three steps of the long road: the start of a <strong>J</strong>ourney, the middle of the <strong>N</strong>ight, and the end of the <strong>Y</strong>ear." Align the rotors to these letters.
+        </div>
+
+        <input class="term-input" id="input-11" type="text" placeholder="decrypted keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(11)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(11)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-11">Set Rotor I to J, Rotor II to N, and Rotor III to Y. The letters on the rotors will read J-N-Y. The decrypted panel will display "journey". Type this word and submit.</div>
+        <div class="feedback hidden" id="feedback-11"></div>
+        <div class="key-collect hidden" id="key-11">
+          <span class="key-label">KEY FRAGMENT 11 ACQUIRED</span>
+          <span class="key-value" id="kv-11"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 12 — NETWORK ROUTING PATHFINDER ══ -->
+  <div class="screen" id="screen-12">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 12 / 20 — NETWORK ROUTING</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › IP ROUTING FORENSICS</div>
+        <h2 class="module-title">Trace the Optimal Network Path</h2>
+        <p class="narr">We need to intercept a secure connection. To avoid packet dropping and timing out, you must route the packet from source node <strong>S</strong> to target node <strong>T</strong> through the network route with the <strong>lowest total latency</strong>.</p>
+        <p class="narr muted">Click on nodes to select your path. Selecting a node automatically calculates the cumulative latency from S. Connect S to T optimally.</p>
+
+        <div class="router-network-container">
+          <div class="router-canvas-wrapper">
+            <canvas id="router-canvas" width="300" height="200"></canvas>
+            <div class="router-nodes-layer" id="router-nodes-layer">
+              <button class="r-node" id="rn-S" onclick="clickRouteNode('S')" style="left: 30px; top: 100px;">S</button>
+              <button class="r-node" id="rn-A" onclick="clickRouteNode('A')" style="left: 110px; top: 40px;">A</button>
+              <button class="r-node" id="rn-B" onclick="clickRouteNode('B')" style="left: 110px; top: 160px;">B</button>
+              <button class="r-node" id="rn-C" onclick="clickRouteNode('C')" style="left: 200px; top: 40px;">C</button>
+              <button class="r-node" id="rn-D" onclick="clickRouteNode('D')" style="left: 200px; top: 160px;">D</button>
+              <button class="r-node" id="rn-T" onclick="clickRouteNode('T')" style="left: 270px; top: 100px;">T</button>
+            </div>
+          </div>
+          
+          <div class="router-stats-panel">
+            <div>SELECTED PATH: <span class="accent-blue" id="route-path-list">S</span></div>
+            <div>ACCUMULATED LATENCY: <span class="accent" id="route-latency-val">0 ms</span></div>
+            <div class="router-status-msg" id="route-status-msg">Awaiting routing path selection...</div>
+            <button class="btn-hint" onclick="resetNetworkRouter()">[ RESET ROUTE ]</button>
+          </div>
+        </div>
+
+        <input class="term-input" id="input-12" type="text" placeholder="decrypted payload keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(12)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(12)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-12">Trace the path: S ➔ A (12ms) ➔ B (8ms) ➔ D (14ms) ➔ T (11ms). Total latency = 45ms. Click S, then A, then B, then D, then T. When successful, the status unlocks "destiny".</div>
+        <div class="feedback hidden" id="feedback-12"></div>
+        <div class="key-collect hidden" id="key-12">
+          <span class="key-label">KEY FRAGMENT 12 ACQUIRED</span>
+          <span class="key-value" id="kv-12"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 13 — XOR BITWISE MANIPULATOR ══ -->
+  <div class="screen" id="screen-13">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 13 / 20 — XOR CRYPTANALYSIS</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › BITWISE OPERATION</div>
+        <h2 class="module-title">Perform XOR Decryption</h2>
+        <p class="narr">We intercepted a 7-byte ciphertext array. The data was encrypted using a single-byte XOR key. You must find the correct 8-bit key sequence to recover the plaintext.</p>
+        <p class="narr muted">Toggle the 8 bit switches to flip the bits of the key (from Bit 7 MSB to Bit 0 LSB). Watch the decrypted ASCII characters change in real-time below.</p>
+
+        <div class="xor-container">
+          <div class="xor-cipher-display">
+            <div class="cw-label">CIPHERTEXT BYTES (HEX):</div>
+            <div class="xor-bytes">0x0F · 0x16 · 0x0F · 0x18 · 0x04 · 0x0B · 0x06</div>
+          </div>
+          
+          <div class="xor-key-panel">
+            <div class="cw-label">DECRYPTION KEY CONSOLE:</div>
+            <div class="xor-key-values">
+              <span class="xk-dec">DECIMAL: <strong class="hl" id="xor-key-dec">0</strong></span>
+              <span class="xk-hex">HEX: <strong class="hl" id="xor-key-hex">0x00</strong></span>
+            </div>
+            <div class="xor-bits-row">
+              <button class="xor-bit-btn" id="bit-7" onclick="toggleXorBit(7)">0<span class="bit-sub">B7</span></button>
+              <button class="xor-bit-btn" id="bit-6" onclick="toggleXorBit(6)">0<span class="bit-sub">B6</span></button>
+              <button class="xor-bit-btn" id="bit-5" onclick="toggleXorBit(5)">0<span class="bit-sub">B5</span></button>
+              <button class="xor-bit-btn" id="bit-4" onclick="toggleXorBit(4)">0<span class="bit-sub">B4</span></button>
+              <button class="xor-bit-btn" id="bit-3" onclick="toggleXorBit(3)">0<span class="bit-sub">B3</span></button>
+              <button class="xor-bit-btn" id="bit-2" onclick="toggleXorBit(2)">0<span class="bit-sub">B2</span></button>
+              <button class="xor-bit-btn" id="bit-1" onclick="toggleXorBit(1)">0<span class="bit-sub">B1</span></button>
+              <button class="xor-bit-btn" id="bit-0" onclick="toggleXorBit(0)">0<span class="bit-sub">B0</span></button>
+            </div>
+          </div>
+
+          <div class="xor-output-panel">
+            <div class="cw-label">DECRYPTED DATA STREAM:</div>
+            <div class="do-result" id="xor-output-val">[GIBBERISH]</div>
+          </div>
+        </div>
+
+        <input class="term-input" id="input-13" type="text" placeholder="decrypted keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(13)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(13)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-13">The XOR key is 106 in decimal. In binary, that is 01101010. Toggle the switches so that bits 6, 5, 3, and 1 are set to 1, and the rest are 0. The data stream will decrypt to "eternal".</div>
+        <div class="feedback hidden" id="feedback-13"></div>
+        <div class="key-collect hidden" id="key-13">
+          <span class="key-label">KEY FRAGMENT 13 ACQUIRED</span>
+          <span class="key-value" id="kv-13"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 14 — LOGIC GATE ANALYZER ══ -->
+  <div class="screen" id="screen-14">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 14 / 20 — LOGIC GATE SIMULATION</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › DIGITAL ELECTRONICS</div>
+        <h2 class="module-title">Unlock the Logical Circuit</h2>
+        <p class="narr">A logical locking mechanism secures the file. Toggle the input lines to set A, B, C, and D. You must analyze the gate network and output a logic <strong>1</strong> (active) on the final channel to release the override seal.</p>
+        <p class="narr muted">Toggle the four input switches. The gate nodes will light up green when their state is 1, and remain dimmed when 0.</p>
+
+        <div class="logic-gate-container">
+          <div class="logic-circuit-board">
+            <!-- Input Row -->
+            <div class="logic-inputs-row">
+              <div class="logic-input-group">
+                <span class="logic-in-lbl">INPUT A</span>
+                <button class="logic-switch-btn" id="lswitch-A" onclick="toggleLogicInput('A')">0</button>
+              </div>
+              <div class="logic-input-group">
+                <span class="logic-input-lbl">INPUT B</span>
+                <button class="logic-switch-btn" id="lswitch-B" onclick="toggleLogicInput('B')">0</button>
+              </div>
+              <div class="logic-input-group">
+                <span class="logic-input-lbl">INPUT C</span>
+                <button class="logic-switch-btn" id="lswitch-C" onclick="toggleLogicInput('C')">0</button>
+              </div>
+              <div class="logic-input-group">
+                <span class="logic-input-lbl">INPUT D</span>
+                <button class="logic-switch-btn" id="lswitch-D" onclick="toggleLogicInput('D')">0</button>
+              </div>
+            </div>
+
+            <!-- Gates Map -->
+            <div class="logic-nodes-flow">
+              <div class="logic-gate-node" id="lg-node-E">
+                <span class="lg-type">AND</span>
+                <span class="lg-val" id="lg-val-E">0</span>
+                <span class="lg-conn">A + B ➔ E</span>
+              </div>
+              <div class="logic-gate-node" id="lg-node-F">
+                <span class="lg-type">NOT</span>
+                <span class="lg-val" id="lg-val-F">1</span>
+                <span class="lg-conn">C ➔ F</span>
+              </div>
+              <div class="logic-gate-node" id="lg-node-G">
+                <span class="lg-type">AND</span>
+                <span class="lg-val" id="lg-val-G">0</span>
+                <span class="lg-conn">E + F ➔ G</span>
+              </div>
+              <div class="logic-gate-node" id="lg-node-H">
+                <span class="lg-type">AND</span>
+                <span class="lg-val" id="lg-val-H">0</span>
+                <span class="lg-conn">G + D ➔ H (OUT)</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="logic-status-bar" id="logic-status-msg">
+            OVERRIDE STATUS: <strong class="red-text" id="logic-lock-state">LOCKED (0)</strong>
+          </div>
+        </div>
+
+        <input class="term-input" id="input-14" type="text" placeholder="decrypted keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(14)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(14)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-14">Set A=1, B=1, C=0, and D=1 to make AND gate E=1, NOT gate F=1, AND gate G=1, and final AND gate H=1. This unlocks the keyword "patience".</div>
+        <div class="feedback hidden" id="feedback-14"></div>
+        <div class="key-collect hidden" id="key-14">
+          <span class="key-label">KEY FRAGMENT 14 ACQUIRED</span>
+          <span class="key-value" id="kv-14"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 15 — VIGENERE DECRYPTION DECK ══ -->
+  <div class="screen" id="screen-15">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 15 / 20 — VIGENÈRE CIPHER</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › POLYALPHABETIC SHIFT</div>
+        <h2 class="module-title">Vigenère Decryption Deck</h2>
+        <p class="narr">An encrypted data packet has been intercepted containing the keyword. Apply the correct alphabetic key to shift the cipher text back to its plain representation.</p>
+        <p class="narr muted">Enter the key in the field below. The offset values will be applied to the ciphertext letters dynamically.</p>
+
+        <div class="vigenere-container">
+          <div class="vig-deck">
+            <div class="vig-chars-row">
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">O</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">S</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">Q</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">S</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">E</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">W</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">J</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">CIPHER</span><span class="vig-val">R</span></div>
+            </div>
+            
+            <div class="vig-shifts-row">
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-0">0</span></div>
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-1">0</span></div>
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-2">0</span></div>
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-3">0</span></div>
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-4">0</span></div>
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-5">0</span></div>
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-6">0</span></div>
+              <div class="vig-shift-card"><span class="vig-lbl">SHIFT</span><span class="vig-shift-val" id="vig-shift-7">0</span></div>
+            </div>
+
+            <div class="vig-chars-row plaintext-row">
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-0">O</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-1">S</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-2">Q</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-3">S</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-4">E</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-5">W</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-6">J</span></div>
+              <div class="vig-char-card"><span class="vig-lbl">PLAIN</span><span class="vig-plain-val" id="vig-plain-7">R</span></div>
+            </div>
+          </div>
+
+          <div class="vig-key-input-wrapper">
+            <span class="cw-label">DECRYPTION KEY (ALPHABETIC):</span>
+            <input type="text" id="vig-key-input" placeholder="enter vigenère key..." autocomplete="off" spellcheck="false" maxlength="20" />
+          </div>
+        </div>
+
+        <input class="term-input" id="input-15" type="text" placeholder="decrypted keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(15)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(15)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-15">The key is "love" (repeated to "lovelove"). Each letter shifts back by the index of the key letter (a=0, b=1...). The plain text unlocks to "devotion".</div>
+        <div class="feedback hidden" id="feedback-15"></div>
+        <div class="key-collect hidden" id="key-15">
+          <span class="key-label">KEY FRAGMENT 15 ACQUIRED</span>
+          <span class="key-value" id="kv-15"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 16 — SPECTROGRAM PEAK FILTER ══ -->
+  <div class="screen" id="screen-16">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 16 / 20 — SIGNAL PROCESSING</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › BANDPASS FILTERING</div>
+        <h2 class="module-title">Spectrogram Peak Filter</h2>
+        <p class="narr">The signal is buried beneath heavy white noise. Isolate the target frequency peak using the bandpass faders to recover the hidden data stream.</p>
+        <p class="narr muted">Adjust Center Frequency and Bandwidth. The target signal resides at 420 Hz. You must isolate it with a tight bandwidth (30 Hz or narrower) to reveal the passcode.</p>
+
+        <div class="spec-container">
+          <canvas id="spectrogram-canvas" width="400" height="150"></canvas>
+          
+          <div class="spec-faders">
+            <div class="spec-fader-group">
+              <div class="spec-lbl-row">
+                <span class="spec-name">CENTER FREQUENCY</span>
+                <span class="spec-val" id="spec-val-freq">100 Hz</span>
+              </div>
+              <input type="range" class="tuner-range" id="spec-freq-slider" min="100" max="800" value="100" />
+            </div>
+            
+            <div class="spec-fader-group">
+              <div class="spec-lbl-row">
+                <span class="spec-name">FILTER BANDWIDTH</span>
+                <span class="spec-val" id="spec-val-width">200 Hz</span>
+              </div>
+              <input type="range" class="tuner-range" id="spec-width-slider" min="10" max="200" value="200" />
+            </div>
+          </div>
+
+          <div class="clue-block" id="spec-status-box">
+            <span class="clue-tag">› FILTER STATUS</span><br/>
+            SIGNAL IS UNSTABLE. ADJUST FILTER PARAMETERS.
+          </div>
+        </div>
+
+        <input class="term-input" id="input-16" type="text" placeholder="decrypted keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(16)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(16)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-16">Set Center Frequency to 420 Hz and Bandwidth to 30 Hz (or lower) to lock the filter and reveal the word "infinite".</div>
+        <div class="feedback hidden" id="feedback-16"></div>
+        <div class="key-collect hidden" id="key-16">
+          <span class="key-label">KEY FRAGMENT 16 ACQUIRED</span>
+          <span class="key-value" id="kv-16"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 17 — CIPHER DIAL LOCK ══ -->
+  <div class="screen" id="screen-17">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 17 / 20 — CIPHER DIAL LOCK</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › ROTATIONAL DIAL MATRIX</div>
+        <h2 class="module-title">Cipher Dial Lock</h2>
+        <p class="narr">A seven-dial combination lock guards the next security core. Each dial cycles through a fixed set of characters. Click a dial to advance it forward, or right-click to go back.</p>
+        <p class="narr muted">Rotate all seven dials until the correct passcode is spelled across them. The lock engages automatically when the word is correct.</p>
+
+        <div class="diallock-container">
+          <div class="diallock-grid" id="diallock-grid">
+            <!-- Dials built by JS -->
+          </div>
+          <div class="diallock-status" id="diallock-status-box">
+            STATUS: LOCK CONSOLE ENGAGED
+          </div>
+        </div>
+
+        <input class="term-input" id="input-17" type="text" placeholder="the unlocked word..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(17)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(17)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-17">Click each dial to cycle forward through its letters (right-click to go back). Spell out C — H — E — R — I — S — H across the seven dials. Once they all lock green, type "cherish".</div>
+        <div class="feedback hidden" id="feedback-17"></div>
+        <div class="key-collect hidden" id="key-17">
+          <span class="key-label">KEY FRAGMENT 17 ACQUIRED</span>
+          <span class="key-value" id="kv-17"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 18 — BINARY SUM CHECK REGISTER ══ -->
+  <div class="screen" id="screen-18">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 18 / 20 — BINARY INTEGRITY REGISTER</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">CRYPTO › REGISTER COMBINATORICS</div>
+        <h2 class="module-title">Binary Sum Check Register</h2>
+        <p class="narr">An index allocation register is locked by a specific checksum. Toggle the binary registers to enable their corresponding weights. The total combined value must equal exactly <strong>244</strong> to decrypt the register payload.</p>
+        <p class="narr muted">Click on each register block to toggle it active (1) or inactive (0). Predefined node weights are displayed above each register.</p>
+
+        <div class="sumcheck-container">
+          <div class="sumcheck-row">
+            <div class="sumcheck-node" id="sc-node-0" onclick="toggleSumCheckNode(0)">
+              <span class="sc-weight">14</span>
+              <button class="sumcheck-btn" id="sc-btn-0">0</button>
+            </div>
+            <div class="sumcheck-node" id="sc-node-1" onclick="toggleSumCheckNode(1)">
+              <span class="sc-weight">25</span>
+              <button class="sumcheck-btn" id="sc-btn-1">0</button>
+            </div>
+            <div class="sumcheck-node" id="sc-node-2" onclick="toggleSumCheckNode(2)">
+              <span class="sc-weight">39</span>
+              <button class="sumcheck-btn" id="sc-btn-2">0</button>
+            </div>
+            <div class="sumcheck-node" id="sc-node-3" onclick="toggleSumCheckNode(3)">
+              <span class="sc-weight">52</span>
+              <button class="sumcheck-btn" id="sc-btn-3">0</button>
+            </div>
+            <div class="sumcheck-node" id="sc-node-4" onclick="toggleSumCheckNode(4)">
+              <span class="sc-weight">68</span>
+              <button class="sumcheck-btn" id="sc-btn-4">0</button>
+            </div>
+            <div class="sumcheck-node" id="sc-node-5" onclick="toggleSumCheckNode(5)">
+              <span class="sc-weight">85</span>
+              <button class="sumcheck-btn" id="sc-btn-5">0</button>
+            </div>
+            <div class="sumcheck-node" id="sc-node-6" onclick="toggleSumCheckNode(6)">
+              <span class="sc-weight">99</span>
+              <button class="sumcheck-btn" id="sc-btn-6">0</button>
+            </div>
+            <div class="sumcheck-node" id="sc-node-7" onclick="toggleSumCheckNode(7)">
+              <span class="sc-weight">120</span>
+              <button class="sumcheck-btn" id="sc-btn-7">0</button>
+            </div>
+          </div>
+          
+          <div class="sumcheck-console">
+            <div class="sc-label">TOTAL ACCUMULATED REGISTER VALUE:</div>
+            <div class="sc-total-val" id="sc-total-val">0 / 244</div>
+          </div>
+          
+          <div class="sumcheck-status" id="sumcheck-status-box">
+            STATUS: WAITING FOR COMBINATORIAL INPUT
+          </div>
+        </div>
+
+        <input class="term-input" id="input-18" type="text" placeholder="decrypted keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(18)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(18)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-18">To get 244, enable the registers with weights 39, 85, and 120 (registers 3, 6, and 8). The status bar will then display "beloved".</div>
+        <div class="feedback hidden" id="feedback-18"></div>
+        <div class="key-collect hidden" id="key-18">
+          <span class="key-label">KEY FRAGMENT 18 ACQUIRED</span>
+          <span class="key-value" id="kv-18"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 19 — SQL INJECTION LOG FORENSICS ══ -->
+  <div class="screen" id="screen-19">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 19 / 20 — FORENSIC LOG AUDITING</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
+      </div>
+      <div class="terminal-body">
+        <div class="module-tag">OSINT › PENETRATION LOG FORENSICS</div>
+        <h2 class="module-title">SQL Injection Log Auditing</h2>
+        <p class="narr">Our network security gateway logged an intrusion event where an attacker successfully exfiltrated our admin password hash using SQL injection. Analyze the raw HTTP access logs below to identify the attacker's source IP address.</p>
+        <p class="narr muted">Use the Grep Filter input to query the log terminal. Once you pinpoint the malicious IP address that successfully executed the exfiltration (returning HTTP status 200 with data payloads, rather than failing with 500 or 401), enter it in the decryption console to decode the payload.</p>
+
+        <div class="forensics-container">
+          <div class="log-search-row">
+            <span class="grep-prefix">grep -i</span>
+            <input type="text" id="log-search-input" placeholder="filter logs (e.g. UNION, SELECT, 200, 500...)" autocomplete="off" spellcheck="false" oninput="filterForensicLogs()" />
+          </div>
+          
+          <div class="log-terminal-wrapper">
+            <div class="log-terminal" id="log-terminal-output">
+              <!-- Logs populated by JS -->
+            </div>
+          </div>
+
+          <div class="forensics-decrypt-panel">
+            <div class="cw-label">PAYLOAD DECRYPTION UTILITY:</div>
+            <div class="forensics-decrypt-row">
+              <input type="text" id="attacker-ip-input" placeholder="attacker ip (e.g. 192.168.1.1)..." autocomplete="off" spellcheck="false" />
+              <button class="btn-primary" onclick="decryptLogPayload()">DECRYPT PAYLOAD</button>
+            </div>
+            <div class="forensics-decrypt-status" id="forensics-status-box">
+              AWAITING CORRECT ATTACKER IP CORRELATION KEY...
+            </div>
+          </div>
+        </div>
+
+        <input class="term-input" id="input-19" type="text" placeholder="decrypted keyword..." autocomplete="off" spellcheck="false" />
+        <div class="btn-row">
+          <button class="btn-hint" onclick="showHint(19)">[ REQUEST HINT ]</button>
+          <button class="btn-primary" onclick="check(19)">SUBMIT ↵</button>
+        </div>
+        <div class="hint-box hidden" id="hint-19">Look for the IP that performed successful SQL injections (status 200). Note that 192.168.12.42 is port scanning, 10.105.2.18 is brute forcing login with 401/403. IP 172.16.5.99 is running UNION queries returning status 200 with large payloads. Enter 172.16.5.99 to decrypt "memories".</div>
+        <div class="feedback hidden" id="feedback-19"></div>
+        <div class="key-collect hidden" id="key-19">
+          <span class="key-label">KEY FRAGMENT 19 ACQUIRED</span>
+          <span class="key-value" id="kv-19"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODULE 20 — OVERRIDE KEY RING ══ -->
+  <div class="screen" id="screen-20">
+    <div class="terminal-window">
+      <div class="terminal-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="terminal-title">MODULE 20 / 20 — KEY DECRYPTION RING</span>
+        <button class="btn-reset-global" onclick="resetProgress()">RESET</button>
       </div>
       <div class="terminal-body">
         <div class="module-tag">SYSTEM › MASTER OVERRIDE</div>
         <h2 class="module-title">Assemble the Master Key</h2>
-        <p class="narr">The final file is locked by a nine-part cryptographic seal. You have collected all nine key fragments. You must insert them in the exact chronological order of their story.</p>
+        <p class="narr">The final file is locked by a nineteen-part cryptographic seal. You have collected all nineteen key fragments. You must insert them in the exact chronological order of their story.</p>
 
         <div class="keyring-container">
           <div class="keyring-slots" id="keyring-slots-container">
@@ -566,6 +1179,16 @@
             <div class="keyring-slot" data-index="6"><span class="slot-num">MOD-07</span><span class="slot-val" id="slot-6">???</span></div>
             <div class="keyring-slot" data-index="7"><span class="slot-num">MOD-08</span><span class="slot-val" id="slot-7">???</span></div>
             <div class="keyring-slot" data-index="8"><span class="slot-num">MOD-09</span><span class="slot-val" id="slot-8">???</span></div>
+            <div class="keyring-slot" data-index="9"><span class="slot-num">MOD-10</span><span class="slot-val" id="slot-9">???</span></div>
+            <div class="keyring-slot" data-index="10"><span class="slot-num">MOD-11</span><span class="slot-val" id="slot-10">???</span></div>
+            <div class="keyring-slot" data-index="11"><span class="slot-num">MOD-12</span><span class="slot-val" id="slot-11">???</span></div>
+            <div class="keyring-slot" data-index="12"><span class="slot-num">MOD-13</span><span class="slot-val" id="slot-12">???</span></div>
+            <div class="keyring-slot" data-index="13"><span class="slot-num">MOD-14</span><span class="slot-val" id="slot-13">???</span></div>
+            <div class="keyring-slot" data-index="14"><span class="slot-num">MOD-15</span><span class="slot-val" id="slot-14">???</span></div>
+            <div class="keyring-slot" data-index="15"><span class="slot-num">MOD-16</span><span class="slot-val" id="slot-15">???</span></div>
+            <div class="keyring-slot" data-index="16"><span class="slot-num">MOD-17</span><span class="slot-val" id="slot-16">???</span></div>
+            <div class="keyring-slot" data-index="17"><span class="slot-num">MOD-18</span><span class="slot-val" id="slot-17">???</span></div>
+            <div class="keyring-slot" data-index="18"><span class="slot-num">MOD-19</span><span class="slot-val" id="slot-18">???</span></div>
           </div>
           <div class="keyring-fragments" id="keyring-frags-container">
             <!-- Fragment buttons populated by JS -->
@@ -578,10 +1201,10 @@
 
         <div class="clue-block">
           <span class="clue-tag">› MISSION NOTE</span><br/>
-          Click on the fragment buttons below to place them into the slots from MOD-01 to MOD-09. The order is determined by the modules you cleared: Kazanlak, Paris, Hiba, Forever, Together, Home, Always Yours, Universe, Symphony.
+          Click on the fragment buttons below to place them into the slots from MOD-01 to MOD-19. The order is determined by the modules you cleared: Kazanlak, Paris, Hiba, Forever, Together, Home, Always Yours, Universe, Symphony, Promise, Journey, Destiny, Eternal, Patience, Devotion, Infinite, Cherish, Beloved, Memories.
         </div>
 
-        <div class="feedback hidden" id="feedback-10"></div>
+        <div class="feedback hidden" id="feedback-20"></div>
       </div>
     </div>
   </div>

@@ -1,3 +1,4 @@
+let clearedStages = [];
 /* ══════════════════════════════════════════
    OPERATION: HIBA — script.js
    Expanded to 10 visual interactive modules.
@@ -13,7 +14,17 @@ const ANSWERS = {
   6: 'home',
   7: 'always yours',
   8: 'universe',
-  9: 'symphony'
+  9: 'symphony',
+  10: 'promise',
+  11: 'journey',
+  12: 'destiny',
+  13: 'eternal',
+  14: 'patience',
+  15: 'devotion',
+  16: 'infinite',
+  17: 'cherish',
+  18: 'beloved',
+  19: 'memories'
 };
 
 // Key fragments collected
@@ -26,7 +37,17 @@ const KEY_FRAGMENTS = {
   6: 'H0M',
   7: 'YRS',
   8: 'UNV',
-  9: 'SYM'
+  9: 'SYM',
+  10: 'PRM',
+  11: 'JNY',
+  12: 'DST',
+  13: 'ETN',
+  14: 'PAT',
+  15: 'DEV',
+  16: 'INF',
+  17: 'CHS',
+  18: 'BLV',
+  19: 'MEM'
 };
 
 // ── Stage order ──
@@ -36,11 +57,15 @@ const STAGE_ORDER = [
   'screen-1', 'screen-2', 'screen-3',
   'screen-4', 'screen-5', 'screen-6',
   'screen-7', 'screen-8', 'screen-9',
-  'screen-10', 'screen-final'
+  'screen-10', 'screen-11', 'screen-12',
+  'screen-13', 'screen-14', 'screen-15',
+  'screen-16', 'screen-17', 'screen-18',
+  'screen-19', 'screen-20', 'screen-final'
 ];
 
 // ── Navigate ──
 function goTo(screenId) {
+  localStorage.setItem('op_hiba_active_screen', screenId);
   // Clean up running intervals / frames
   if (waveAnimFrame) {
     cancelAnimationFrame(waveAnimFrame);
@@ -54,6 +79,18 @@ function goTo(screenId) {
     clearInterval(matrixDecodeInterval);
     matrixDecodeInterval = null;
   }
+  // Morse cleanup
+  if (morseTimer) {
+    clearInterval(morseTimer);
+    morseTimer = null;
+  }
+  if (morseAudioCtx) {
+    try {
+      morseAudioCtx.close();
+    } catch(e) {}
+    morseAudioCtx = null;
+  }
+  morsePlaying = false;
 
   document.querySelectorAll('.screen').forEach(s => {
     s.classList.remove('active');
@@ -74,7 +111,17 @@ function goTo(screenId) {
   if (screenId === 'screen-7') initBase64Matrix();
   if (screenId === 'screen-8') initStarMapper();
   if (screenId === 'screen-9') initEqualizer();
-  if (screenId === 'screen-10') initKeyring();
+  if (screenId === 'screen-10') initMorseCode();
+  if (screenId === 'screen-11') initEnigma();
+  if (screenId === 'screen-12') initNetworkRouter();
+  if (screenId === 'screen-13') initXorManipulator();
+  if (screenId === 'screen-14') initLogicCircuit();
+  if (screenId === 'screen-15') initVigenere();
+  if (screenId === 'screen-16') initSpectrogramFilter();
+  if (screenId === 'screen-17') initWordLock();
+  if (screenId === 'screen-18') initSumCheck();
+  if (screenId === 'screen-19') initLogAuditing();
+  if (screenId === 'screen-20') initKeyring();
   if (screenId === 'screen-final') initFinalScreen();
 }
 
@@ -105,7 +152,17 @@ function check(stage) {
       6: '> alignment error. synchronize the waveform sliders to 100% to decrypt the keyword.',
       7: '> payload mismatch. run the decryption engine, copy the output, and type it exactly.',
       8: '> constellation signature mismatch. connect stars 1 to 5 to 1 in order to reveal the word.',
-      9: '> frequency mismatch. lock all 5 equalizer channels to match the target percentages.'
+      9: '> frequency mismatch. lock all 5 equalizer channels to match the target percentages.',
+      10: '> signal parsing failure. check the morse alphabet. are you sure you translated all characters correctly?',
+      11: '> decryption key out of sync. check the rotor alignment.',
+      12: '> routing handshake failed. verify you have chosen the route with the lowest latency.',
+      13: '> bitwise parity check failed. payload is corrupted.',
+      14: '> logic gate state is invalid. output is 0. target is 1.',
+      15: '> decryption error. apply the correct alphabetic key to align the shifts.',
+      16: '> signal processing failed. adjust filter parameters to isolate the target peak.',
+      17: '> alignment lock error. rotate columns to align the middle row.',
+      18: '> register checksum invalid. toggle switches to sum exactly 244.',
+      19: '> database decryption key mismatch. identify the correct attacker ip.'
     };
     showError(stage, wrongs[stage] || '> incorrect. try again.');
   }
@@ -113,6 +170,10 @@ function check(stage) {
 
 // ── Success ──
 function showSuccess(stage) {
+  if (!clearedStages.includes(stage)) {
+    clearedStages.push(stage);
+    localStorage.setItem('op_hiba_cleared_stages', JSON.stringify(clearedStages));
+  }
   const fb = document.getElementById('feedback-' + stage);
   if (fb) {
     fb.classList.remove('hidden', 'error');
@@ -801,93 +862,515 @@ function flashStarsError() {
 
 
 /* ══════════════════════════════════════════
-   MODULE 09 — GRAPHIC EQUALIZER WIDGET
+   MODULE 10 — MORSE CODE TRANSCEIVER
    ══════════════════════════════════════════ */
-const eqTargets = {
-  0: 70,
-  1: 30,
-  2: 50,
-  3: 80,
-  4: 40
-};
+let morsePlaying = false;
+let morseTimer = null;
+let morseAudioCtx = null;
+let morseAudioEnabled = false;
+let morseWPM = 12;
+let morseIndex = 0;
+let morseTimeline = [];
+let morseOscillator = null;
+let morseGainNode = null;
 
-function initEqualizer() {
-  const sliders = document.querySelectorAll('.eq-slider');
-  const statusBox = document.getElementById('eq-status-box');
-  if (!sliders.length || !statusBox) return;
-
-  statusBox.innerHTML = '<span class="clue-tag">› SYSTEM STATUS</span><br/>Adjust faders until all channels say "LOCKED" (within 5% of their targets). A harmonic word will then decrypt.';
-
-  sliders.forEach(slider => {
-    const idx = parseInt(slider.getAttribute('data-idx'));
-    const valText = document.getElementById(`eq-val-${idx}`);
-    const targetMarker = document.getElementById(`eq-tgt-${idx}`);
-
-    function updateChannel() {
-      const val = parseInt(slider.value);
-      if (valText) valText.textContent = val + '%';
-
-      const target = eqTargets[idx];
-      const matches = Math.abs(val - target) <= 5;
-
-      if (matches) {
-        if (targetMarker) {
-          targetMarker.textContent = `LOCKED (${target}%)`;
-          targetMarker.classList.add('locked');
-        }
-        if (valText) valText.classList.add('match');
-      } else {
-        if (targetMarker) {
-          targetMarker.textContent = `Target: ${target}%`;
-          targetMarker.classList.remove('locked');
-        }
-        if (valText) valText.classList.remove('match');
+function buildMorseTimeline() {
+  morseTimeline = [];
+  const word = "promise";
+  const morseMap = {
+    'p': '.--.', 'r': '.-.', 'o': '---', 'm': '--', 'i': '..', 's': '...', 'e': '.'
+  };
+  for (let c of word) {
+    const symbols = morseMap[c];
+    for (let i = 0; i < symbols.length; i++) {
+      const symbol = symbols[i];
+      const units = (symbol === '.') ? 1 : 3;
+      morseTimeline.push({ state: true, units: units });
+      // element spacing
+      if (i < symbols.length - 1) {
+        morseTimeline.push({ state: false, units: 1 });
       }
-
-      checkEqualizerSync();
     }
-
-    slider.addEventListener('input', updateChannel);
-    updateChannel();
-  });
+    // character spacing
+    morseTimeline.push({ state: false, units: 3 });
+  }
+  // word loop spacing
+  morseTimeline.push({ state: false, units: 7 });
 }
 
-function checkEqualizerSync() {
-  const sliders = document.querySelectorAll('.eq-slider');
-  const statusBox = document.getElementById('eq-status-box');
-  if (!sliders.length || !statusBox) return;
+function startMorseBeep() {
+  if (!morseAudioCtx) {
+    morseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (morseAudioCtx.state === 'suspended') {
+    morseAudioCtx.resume();
+  }
+  stopMorseBeep();
 
-  let allLocked = true;
-  sliders.forEach(slider => {
-    const idx = parseInt(slider.getAttribute('data-idx'));
-    const val = parseInt(slider.value);
-    const target = eqTargets[idx];
-    if (Math.abs(val - target) > 5) {
-      allLocked = false;
-    }
-  });
+  morseOscillator = morseAudioCtx.createOscillator();
+  morseGainNode = morseAudioCtx.createGain();
 
-  if (allLocked) {
-    statusBox.innerHTML = '<span class="clue-tag">› SIGNAL SECURED</span><br/>Frequencies tuned into harmony. keyword unlocked: <strong class="hl">"symphony"</strong>';
+  morseOscillator.type = 'sine';
+  morseOscillator.frequency.value = 800;
+
+  morseGainNode.gain.setValueAtTime(0.0, morseAudioCtx.currentTime);
+  morseGainNode.gain.linearRampToValueAtTime(0.08, morseAudioCtx.currentTime + 0.01);
+
+  morseOscillator.connect(morseGainNode);
+  morseGainNode.connect(morseAudioCtx.destination);
+  morseOscillator.start();
+}
+
+function stopMorseBeep() {
+  if (morseOscillator) {
+    try {
+      if (morseGainNode && morseAudioCtx) {
+        morseGainNode.gain.setValueAtTime(morseGainNode.gain.value, morseAudioCtx.currentTime);
+        morseGainNode.gain.linearRampToValueAtTime(0.0, morseAudioCtx.currentTime + 0.01);
+      }
+      const osc = morseOscillator;
+      setTimeout(() => {
+        try { osc.stop(); osc.disconnect(); } catch(e) {}
+      }, 15);
+    } catch(e) {}
+    morseOscillator = null;
+  }
+}
+
+function setMorseIndicator(state) {
+  const light = document.getElementById('morse-light');
+  if (light) {
+    if (state) light.classList.add('active');
+    else light.classList.remove('active');
+  }
+  if (state && morseAudioEnabled) {
+    startMorseBeep();
   } else {
-    statusBox.innerHTML = '<span class="clue-tag">› SYSTEM STATUS</span><br/>Adjust faders until all channels say "LOCKED" (within 5% of their targets). A harmonic word will then decrypt.';
+    stopMorseBeep();
+  }
+}
+
+function playNextMorseStep() {
+  if (!morsePlaying) {
+    setMorseIndicator(false);
+    return;
+  }
+  const step = morseTimeline[morseIndex];
+  const unitTime = 1200 / morseWPM;
+  const duration = step.units * unitTime;
+
+  setMorseIndicator(step.state);
+
+  morseIndex = (morseIndex + 1) % morseTimeline.length;
+  morseTimer = setTimeout(playNextMorseStep, duration);
+}
+
+function initMorseCode() {
+  morsePlaying = false;
+  morseAudioEnabled = false;
+  morseWPM = 12;
+  morseIndex = 0;
+  
+  if (morseTimer) clearTimeout(morseTimer);
+  setMorseIndicator(false);
+  buildMorseTimeline();
+
+  const playBtn = document.getElementById('btn-morse-play-pause');
+  const audioBtn = document.getElementById('btn-morse-audio-toggle');
+  const slider = document.getElementById('morse-speed-slider');
+  const wpmTxt = document.getElementById('morse-wpm-txt');
+
+  if (playBtn) {
+    playBtn.textContent = "PLAY TRANSMISSION";
+    playBtn.onclick = () => {
+      morsePlaying = !morsePlaying;
+      if (morsePlaying) {
+        playBtn.textContent = "PAUSE TRANSMISSION";
+        playBtn.classList.add('active');
+        playNextMorseStep();
+      } else {
+        playBtn.textContent = "PLAY TRANSMISSION";
+        playBtn.classList.remove('active');
+        if (morseTimer) clearTimeout(morseTimer);
+        setMorseIndicator(false);
+      }
+    };
+  }
+
+  if (audioBtn) {
+    audioBtn.textContent = "ENABLE AUDIO (BEEP)";
+    audioBtn.classList.remove('active');
+    audioBtn.onclick = () => {
+      morseAudioEnabled = !morseAudioEnabled;
+      if (morseAudioEnabled) {
+        audioBtn.textContent = "DISABLE AUDIO (BEEP)";
+        audioBtn.classList.add('active');
+        // trigger context creation
+        if (!morseAudioCtx) {
+          morseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      } else {
+        audioBtn.textContent = "ENABLE AUDIO (BEEP)";
+        audioBtn.classList.remove('active');
+        stopMorseBeep();
+      }
+    };
+  }
+
+  if (slider && wpmTxt) {
+    slider.value = 12;
+    wpmTxt.textContent = "12 WPM";
+    slider.oninput = () => {
+      morseWPM = parseInt(slider.value);
+      wpmTxt.textContent = morseWPM + " WPM";
+    };
   }
 }
 
 
 /* ══════════════════════════════════════════
-   MODULE 10 — MASTER KEY RING WIDGET
+   MODULE 11 — ENIGMA ROTOR SIMULATOR
    ══════════════════════════════════════════ */
-const keyringCorrectOrder = ['K4Z', 'P4R', 'H1B', '4EV', 'T0G', 'H0M', 'YRS', 'UNV', 'SYM'];
-let keyringCurrentSlots = Array(9).fill(null);
+let rotorValues = [0, 0, 0]; // 0-25 offset
+
+function initEnigma() {
+  rotorValues = [0, 0, 0];
+  updateEnigmaUI();
+}
+
+function rotateRotor(idx, dir) {
+  rotorValues[idx] = (rotorValues[idx] + dir + 26) % 26;
+  updateEnigmaUI();
+}
+
+function updateEnigmaUI() {
+  for (let i = 0; i < 3; i++) {
+    const el = document.getElementById(`rotor-${i}-val`);
+    if (el) el.textContent = String.fromCharCode(65 + rotorValues[i]);
+  }
+  updateEnigmaDecryption();
+}
+
+function updateEnigmaDecryption() {
+  const s1 = rotorValues[0] - 9; // J is 9
+  const s2 = rotorValues[1] - 13; // N is 13
+  const s3 = rotorValues[2] - 24; // Y is 24
+
+  const targetWord = "journey";
+  let output = "";
+  for (let i = 0; i < targetWord.length; i++) {
+    const targetCode = targetWord.charCodeAt(i) - 97;
+    let shift = 0;
+    if (i === 0 || i === 1) shift = s1;
+    else if (i === 2 || i === 3) shift = s2;
+    else shift = s3;
+
+    let shiftedCode = (targetCode + shift) % 26;
+    if (shiftedCode < 0) shiftedCode += 26;
+    output += String.fromCharCode(97 + shiftedCode);
+  }
+
+  const display = document.getElementById('enigma-decrypted-val');
+  if (display) {
+    display.textContent = output.toUpperCase();
+    if (s1 === 0 && s2 === 0 && s3 === 0) {
+      display.classList.add('match');
+    } else {
+      display.classList.remove('match');
+    }
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   MODULE 12 — NETWORK ROUTING PATHFINDER
+   ══════════════════════════════════════════ */
+const routerConnections = [
+  { from: 'S', to: 'A', weight: 12 },
+  { from: 'S', to: 'B', weight: 25 },
+  { from: 'A', to: 'B', weight: 8 },
+  { from: 'A', to: 'C', weight: 15 },
+  { from: 'B', to: 'D', weight: 14 },
+  { from: 'C', to: 'D', weight: 10 },
+  { from: 'C', to: 'T', weight: 35 },
+  { from: 'D', to: 'T', weight: 11 }
+];
+const routerNodeCoords = {
+  'S': { x: 30, y: 100 },
+  'A': { x: 110, y: 40 },
+  'B': { x: 110, y: 160 },
+  'C': { x: 200, y: 40 },
+  'D': { x: 200, y: 160 },
+  'T': { x: 270, y: 100 }
+};
+let routerSelectedPath = ['S'];
+let routerCurrentLatency = 0;
+let routerCompleted = false;
+
+function initNetworkRouter() {
+  routerSelectedPath = ['S'];
+  routerCurrentLatency = 0;
+  routerCompleted = false;
+
+  const msg = document.getElementById('route-status-msg');
+  if (msg) {
+    msg.textContent = "Awaiting routing path selection...";
+    msg.className = "router-status-msg";
+  }
+
+  updateRouteNodeButtons();
+  drawRouterNetwork();
+}
+
+function resetNetworkRouter() {
+  initNetworkRouter();
+}
+
+function drawRouterNetwork() {
+  const canvas = document.getElementById('router-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  routerConnections.forEach(conn => {
+    const p1 = routerNodeCoords[conn.from];
+    const p2 = routerNodeCoords[conn.to];
+
+    let isActive = false;
+    for (let i = 0; i < routerSelectedPath.length - 1; i++) {
+      if ((routerSelectedPath[i] === conn.from && routerSelectedPath[i+1] === conn.to) ||
+          (routerSelectedPath[i] === conn.to && routerSelectedPath[i+1] === conn.from)) {
+        isActive = true;
+        break;
+      }
+    }
+
+    ctx.beginPath();
+    ctx.strokeStyle = isActive ? (routerCompleted ? '#00e5a0' : '#3d9eff') : '#1e2535';
+    ctx.lineWidth = isActive ? 4 : 2;
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+
+    const midX = (p1.x + p2.x) / 2;
+    const midY = (p1.y + p2.y) / 2;
+
+    ctx.fillStyle = '#0a0c10';
+    ctx.fillRect(midX - 18, midY - 6, 36, 12);
+
+    ctx.fillStyle = isActive ? (routerCompleted ? '#00e5a0' : '#3d9eff') : '#5a6478';
+    ctx.font = '9px JetBrains Mono, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${conn.weight}ms`, midX, midY);
+  });
+}
+
+function clickRouteNode(nodeId) {
+  if (routerCompleted) return;
+
+  const lastNode = routerSelectedPath[routerSelectedPath.length - 1];
+  if (nodeId === lastNode) return;
+
+  const conn = routerConnections.find(c => 
+    (c.from === lastNode && c.to === nodeId) || (c.from === nodeId && c.to === lastNode)
+  );
+
+  if (!conn) {
+    const msg = document.getElementById('route-status-msg');
+    if (msg) {
+      msg.textContent = `› Link error: Node ${lastNode} is not linked to Node ${nodeId}.`;
+      msg.className = "router-status-msg error-text";
+    }
+    return;
+  }
+
+  routerSelectedPath.push(nodeId);
+  routerCurrentLatency += conn.weight;
+
+  updateRouteNodeButtons();
+  drawRouterNetwork();
+
+  const msg = document.getElementById('route-status-msg');
+  if (nodeId === 'T') {
+    if (routerCurrentLatency === 45) { // S-A-B-D-T
+      routerCompleted = true;
+      if (msg) {
+        msg.innerHTML = '› <span class="hl">ROUTE ENCRYPTED CHANNEL SECURED › "destiny"</span>';
+        msg.className = "router-status-msg success-text";
+      }
+      updateRouteNodeButtons();
+      drawRouterNetwork();
+    } else {
+      if (msg) {
+        msg.textContent = `› ROUTE TIMEOUT: Latency ${routerCurrentLatency}ms exceeds threshold. Resetting...`;
+        msg.className = "router-status-msg error-text";
+      }
+      setTimeout(resetNetworkRouter, 1200);
+    }
+  } else {
+    if (msg) {
+      msg.textContent = `› Packet at node ${nodeId}. Current latency: ${routerCurrentLatency}ms.`;
+      msg.className = "router-status-msg";
+    }
+  }
+}
+
+function updateRouteNodeButtons() {
+  document.querySelectorAll('.r-node').forEach(btn => {
+    const node = btn.id.substring(3);
+    if (routerSelectedPath.includes(node)) {
+      btn.classList.add('active');
+      if (routerCompleted) {
+        btn.classList.add('glow');
+      }
+    } else {
+      btn.classList.remove('active', 'glow');
+    }
+  });
+
+  const pathList = document.getElementById('route-path-list');
+  const latencyVal = document.getElementById('route-latency-val');
+  if (pathList) pathList.textContent = routerSelectedPath.join(' ➔ ');
+  if (latencyVal) latencyVal.textContent = `${routerCurrentLatency} ms`;
+}
+
+
+/* ══════════════════════════════════════════
+   MODULE 13 — XOR BITWISE MANIPULATOR
+   ══════════════════════════════════════════ */
+let xorKey = 0; // 0-255
+const xorCiphertext = [0x0F, 0x16, 0x0F, 0x18, 0x04, 0x0B, 0x06];
+
+function initXorManipulator() {
+  xorKey = 0;
+  updateXorUI();
+}
+
+function toggleXorBit(bitIdx) {
+  xorKey ^= (1 << bitIdx);
+  updateXorUI();
+}
+
+function updateXorUI() {
+  const decEl = document.getElementById('xor-key-dec');
+  const hexEl = document.getElementById('xor-key-hex');
+  if (decEl) decEl.textContent = xorKey;
+  if (hexEl) hexEl.textContent = '0x' + xorKey.toString(16).toUpperCase().padStart(2, '0');
+
+  for (let i = 0; i < 8; i++) {
+    const bitBtn = document.getElementById(`bit-${i}`);
+    if (bitBtn) {
+      const bitVal = (xorKey >> i) & 1;
+      bitBtn.innerHTML = `${bitVal}<span class="bit-sub">B${i}</span>`;
+      if (bitVal === 1) {
+        bitBtn.classList.add('active');
+      } else {
+        bitBtn.classList.remove('active');
+      }
+    }
+  }
+
+  updateXorDecryption();
+}
+
+function updateXorDecryption() {
+  const decrypted = xorCiphertext.map(b => b ^ xorKey);
+  const plainText = decrypted.map(b => (b >= 32 && b <= 126) ? String.fromCharCode(b) : '.').join('');
+
+  const display = document.getElementById('xor-output-val');
+  if (display) {
+    display.textContent = plainText.toUpperCase();
+    if (plainText === "eternal") {
+      display.classList.add('match');
+    } else {
+      display.classList.remove('match');
+    }
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   MODULE 14 — LOGIC GATE ANALYZER
+   ══════════════════════════════════════════ */
+let logicInputs = { A: 0, B: 0, C: 0, D: 0 };
+
+function initLogicCircuit() {
+  logicInputs = { A: 0, B: 0, C: 0, D: 0 };
+  updateLogicUI();
+}
+
+function toggleLogicInput(inputName) {
+  logicInputs[inputName] = logicInputs[inputName] === 1 ? 0 : 1;
+  updateLogicUI();
+}
+
+function updateLogicUI() {
+  for (const name in logicInputs) {
+    const btn = document.getElementById(`lswitch-${name}`);
+    if (btn) {
+      btn.textContent = logicInputs[name];
+      if (logicInputs[name] === 1) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    }
+  }
+
+  // Gates logic evaluation
+  const E = (logicInputs.A && logicInputs.B) ? 1 : 0;
+  const F = (!logicInputs.C) ? 1 : 0;
+  const G = (E && F) ? 1 : 0;
+  const H = (G && logicInputs.D) ? 1 : 0;
+
+  updateGateNodeUI('E', E);
+  updateGateNodeUI('F', F);
+  updateGateNodeUI('G', G);
+  updateGateNodeUI('H', H);
+
+  const stateMsg = document.getElementById('logic-lock-state');
+  const statusBox = document.getElementById('logic-status-msg');
+  if (stateMsg && statusBox) {
+    if (H === 1) {
+      stateMsg.textContent = 'CONFIRMED (1)';
+      stateMsg.className = 'green-text';
+      statusBox.innerHTML = 'OVERRIDE STATUS: <strong class="green-text" id="logic-lock-state">CONFIRMED (1)</strong> › KEYWORD: <strong class="hl">"patience"</strong>';
+    } else {
+      stateMsg.textContent = 'LOCKED (0)';
+      stateMsg.className = 'red-text';
+      statusBox.innerHTML = 'OVERRIDE STATUS: <strong class="red-text" id="logic-lock-state">LOCKED (0)</strong>';
+    }
+  }
+}
+
+function updateGateNodeUI(gateId, val) {
+  const node = document.getElementById(`lg-node-${gateId}`);
+  const valEl = document.getElementById(`lg-val-${gateId}`);
+  if (node && valEl) {
+    valEl.textContent = val;
+    if (val === 1) {
+      node.classList.add('active');
+    } else {
+      node.classList.remove('active');
+    }
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   MODULE 15 — OVERRIDE KEY RING WIDGET
+   ══════════════════════════════════════════ */
+const keyringCorrectOrder = ['K4Z', 'P4R', 'H1B', '4EV', 'T0G', 'H0M', 'YRS', 'UNV', 'SYM', 'PRM', 'JNY', 'DST', 'ETN', 'PAT', 'DEV', 'INF', 'CHS', 'BLV', 'MEM'];
+let keyringCurrentSlots = Array(19).fill(null);
 
 function initKeyring() {
-  keyringCurrentSlots = Array(9).fill(null);
+  keyringCurrentSlots = Array(19).fill(null);
   
   const container = document.getElementById('keyring-frags-container');
   const resetBtn = document.getElementById('btn-keyring-reset');
   const submitBtn = document.getElementById('btn-keyring-submit');
-  const fb = document.getElementById('feedback-10');
+  const fb = document.getElementById('feedback-20');
   
   if (!container || !resetBtn || !submitBtn || !fb) return;
 
@@ -1008,7 +1491,8 @@ function buildFinalKeys() {
   Object.entries(KEY_FRAGMENTS).forEach(([stage, val]) => {
     const span = document.createElement('span');
     span.className = 'fk';
-    span.textContent = `MOD-0${stage}: ${val}`;
+    const prefix = parseInt(stage) < 10 ? 'MOD-0' : 'MOD-';
+    span.textContent = `${prefix}${stage}: ${val}`;
     span.style.animationDelay = (parseInt(stage) * 0.1) + 's';
     row.appendChild(span);
   });
@@ -1065,6 +1549,472 @@ function initRain() {
   }
 }
 
+
+/* ══════════════════════════════════════════
+   MODULE 09 — restored GRAPHIC EQUALIZER WIDGET
+   ══════════════════════════════════════════ */
+const eqTargets = [70, 30, 50, 80, 40];
+
+function initEqualizer() {
+  const sliders = document.querySelectorAll('.eq-slider');
+  sliders.forEach(slider => {
+    slider.oninput = () => {
+      const idx = parseInt(slider.getAttribute('data-idx'));
+      const val = parseInt(slider.value);
+      const valTxt = document.getElementById('eq-val-' + idx);
+      if (valTxt) valTxt.textContent = val + '%';
+      const target = eqTargets[idx];
+      const targetMarker = document.getElementById('eq-tgt-' + idx);
+      if (Math.abs(val - target) <= 5) {
+        if (valTxt) valTxt.classList.add('match');
+        if (targetMarker) targetMarker.classList.add('locked');
+      } else {
+        if (valTxt) valTxt.classList.remove('match');
+        if (targetMarker) targetMarker.classList.remove('locked');
+      }
+      checkEqualizerSync();
+    };
+  });
+  // Explicit init — don't rely on dispatchEvent
+  sliders.forEach(slider => {
+    const idx = parseInt(slider.getAttribute('data-idx'));
+    const val = parseInt(slider.value);
+    const valTxt = document.getElementById('eq-val-' + idx);
+    const target = eqTargets[idx];
+    const targetMarker = document.getElementById('eq-tgt-' + idx);
+    if (valTxt) {
+      valTxt.textContent = val + '%';
+      if (Math.abs(val - target) <= 5) valTxt.classList.add('match');
+      else valTxt.classList.remove('match');
+    }
+    if (targetMarker) {
+      if (Math.abs(val - target) <= 5) targetMarker.classList.add('locked');
+      else targetMarker.classList.remove('locked');
+    }
+  });
+  checkEqualizerSync();
+}
+
+function checkEqualizerSync() {
+  const sliders = document.querySelectorAll('.eq-slider');
+  let allMatched = true;
+  sliders.forEach(slider => {
+    const idx = parseInt(slider.getAttribute('data-idx'));
+    const val = parseInt(slider.value);
+    if (Math.abs(val - eqTargets[idx]) > 5) {
+      allMatched = false;
+    }
+  });
+
+  const statusBox = document.getElementById('eq-status-box');
+  if (statusBox) {
+    if (allMatched) {
+      statusBox.innerHTML = '<span class="clue-tag" style="color:var(--green)">› SIGNAL SECURED</span><br/>Harmonic resonance secured. Decrypted payload: <strong class="hl">"symphony"</strong>';
+    } else {
+      statusBox.innerHTML = '<span class="clue-tag">› SYSTEM STATUS</span><br/>Adjust faders until all channels say "LOCKED" (within 5% of their targets). A harmonic word will then decrypt.';
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   MODULE 15 — VIGENERE DECRYPTION DECK
+   ══════════════════════════════════════════ */
+function initVigenere() {
+  const keyInput = document.getElementById('vig-key-input');
+  if (!keyInput) return;
+  keyInput.value = '';
+
+  const ciphertext = "OSQSEWJR";
+  
+  function updateVigenere() {
+    const key = keyInput.value.toLowerCase().replace(/[^a-z]/g, '');
+    const cards = document.querySelectorAll('.vig-plain-val');
+    const shiftCards = document.querySelectorAll('.vig-shift-val');
+
+    for (let i = 0; i < ciphertext.length; i++) {
+      const cChar = ciphertext[i];
+      let shift = 0;
+      if (key.length > 0) {
+        const keyChar = key[i % key.length];
+        shift = keyChar.charCodeAt(0) - 97;
+      }
+
+      // Calculate decrypted character
+      let code = cChar.charCodeAt(0);
+      let pCode = code - shift;
+      if (pCode < 65) pCode += 26;
+      const pChar = String.fromCharCode(pCode);
+
+      const shiftEl = document.getElementById('vig-shift-' + i);
+      const plainEl = document.getElementById('vig-plain-' + i);
+
+      if (shiftEl) shiftEl.textContent = '+' + shift;
+      if (plainEl) {
+        plainEl.textContent = pChar;
+        if (key === 'love') {
+          plainEl.classList.add('match');
+        } else {
+          plainEl.classList.remove('match');
+        }
+      }
+    }
+  }
+
+  keyInput.addEventListener('input', updateVigenere);
+  updateVigenere();
+}
+
+/* ══════════════════════════════════════════
+   MODULE 16 — SPECTROGRAM PEAK FILTER
+   ══════════════════════════════════════════ */
+function initSpectrogramFilter() {
+  const canvas = document.getElementById('spectrogram-canvas');
+  const freqSlider = document.getElementById('spec-freq-slider');
+  const widthSlider = document.getElementById('spec-width-slider');
+  const freqVal = document.getElementById('spec-val-freq');
+  const widthVal = document.getElementById('spec-val-width');
+  const statusBox = document.getElementById('spec-status-box');
+
+  if (!canvas || !freqSlider || !widthSlider) return;
+
+  const ctx = canvas.getContext('2d');
+  
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    const freq = parseInt(freqSlider.value);
+    const width = parseInt(widthSlider.value);
+
+    freqVal.textContent = freq + ' Hz';
+    widthVal.textContent = width + ' Hz';
+
+    // Draw white noise waveform (simulated)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < canvas.width; x += 3) {
+      const y = canvas.height * 0.7 + (Math.random() - 0.5) * 15;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Draw target peak (420 Hz, located around x = 420px map)
+    const targetFreq = 420;
+    const isMatched = Math.abs(freq - targetFreq) <= 10 && width <= 30;
+
+    // Draw signal peak
+    ctx.beginPath();
+    ctx.strokeStyle = isMatched ? 'rgba(0, 229, 160, 0.8)' : 'rgba(61, 158, 255, 0.3)';
+    ctx.lineWidth = 2;
+    for (let x = 0; x < canvas.width; x++) {
+      // Map x coordinate (0 to width) to frequency (100 to 800)
+      const f = 100 + (x / canvas.width) * 700;
+      // Normal distribution around targetFreq
+      const dist = Math.abs(f - targetFreq);
+      const peakHeight = Math.exp(-Math.pow(dist / 15, 2)) * 80;
+      const noise = (Math.random() - 0.5) * 5;
+      const y = canvas.height * 0.8 - peakHeight + noise;
+      if (x === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Draw Bandpass filter window (shaded rectangle)
+    const startX = ((freq - width/2 - 100) / 700) * canvas.width;
+    const endX = ((freq + width/2 - 100) / 700) * canvas.width;
+    ctx.fillStyle = isMatched ? 'rgba(0, 229, 160, 0.08)' : 'rgba(61, 158, 255, 0.05)';
+    ctx.fillRect(startX, 0, endX - startX, canvas.height);
+    
+    // Draw filter edges
+    ctx.strokeStyle = isMatched ? 'rgba(0, 229, 160, 0.4)' : 'rgba(61, 158, 255, 0.2)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(startX, 0); ctx.lineTo(startX, canvas.height);
+    ctx.moveTo(endX, 0); ctx.lineTo(endX, canvas.height);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (isMatched) {
+      statusBox.innerHTML = '<span class="clue-tag" style="color:var(--green)">› FILTER LOCKED</span><br/>Peak isolated at 420 Hz. Decrypted payload: <strong class="hl">"infinite"</strong>';
+      statusBox.className = 'clue-block locked-signal';
+    } else {
+      statusBox.innerHTML = '<span class="clue-tag">› FILTER STATUS</span><br/>SIGNAL IS UNSTABLE. ADJUST FILTER PARAMETERS.';
+      statusBox.className = 'clue-block';
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  freqSlider.addEventListener('input', draw);
+  widthSlider.addEventListener('input', draw);
+  draw();
+}
+
+/* ══════════════════════════════════════════
+/* ══════════════════════════════════════════
+   MODULE 17 — CIPHER DIAL LOCK
+   ══════════════════════════════════════════ */
+const dialLetters = [
+  ['X', 'M', 'C', 'P', 'Y', 'B'],   // target: C (index 2)
+  ['Q', 'F', 'T', 'H', 'R', 'N'],   // target: H (index 3)
+  ['D', 'E', 'A', 'S', 'U', 'N'],   // target: E (index 1)
+  ['K', 'G', 'Z', 'V', 'R', 'I'],   // target: R (index 4)  -- wait, R is at index 4? no: K G Z V R I -> R=4 ✓
+  ['W', 'N', 'L', 'T', 'I', 'D'],   // target: I (index 4)
+  ['A', 'O', 'Y', 'F', 'S', 'Q'],   // target: S (index 4)
+  ['V', 'Z', 'M', 'B', 'K', 'H']    // target: H (index 5)
+];
+let dialIndices = [0, 0, 0, 0, 0, 0, 0];
+
+function initWordLock() {
+  dialIndices = [0, 0, 0, 0, 0, 0, 0];
+
+  const grid = document.getElementById('diallock-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  dialLetters.forEach((letters, col) => {
+    const dial = document.createElement('div');
+    dial.className = 'dial-tile';
+    dial.id = 'dial-' + col;
+    dial.setAttribute('data-col', col);
+
+    const hint = document.createElement('div');
+    hint.className = 'dial-hint';
+    hint.textContent = '▲ click ▼';
+
+    const letter = document.createElement('div');
+    letter.className = 'dial-letter';
+    letter.id = 'dial-letter-' + col;
+    letter.textContent = letters[0];
+
+    const counter = document.createElement('div');
+    counter.className = 'dial-counter';
+    counter.id = 'dial-counter-' + col;
+    counter.textContent = '1 / ' + letters.length;
+
+    dial.appendChild(hint);
+    dial.appendChild(letter);
+    dial.appendChild(counter);
+
+    // Left-click: advance forward
+    dial.addEventListener('click', (e) => {
+      e.preventDefault();
+      stepDial(col, 1);
+    });
+
+    // Right-click: go backward
+    dial.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      stepDial(col, -1);
+    });
+
+    grid.appendChild(dial);
+  });
+
+  updateDialStatus();
+}
+
+function stepDial(col, dir) {
+  const len = dialLetters[col].length;
+  dialIndices[col] = (dialIndices[col] + dir + len) % len;
+
+  const letterEl = document.getElementById('dial-letter-' + col);
+  const counterEl = document.getElementById('dial-counter-' + col);
+  const dialEl = document.getElementById('dial-' + col);
+
+  if (letterEl) letterEl.textContent = dialLetters[col][dialIndices[col]];
+  if (counterEl) counterEl.textContent = (dialIndices[col] + 1) + ' / ' + dialLetters[col].length;
+
+  // Flash animation
+  if (dialEl) {
+    dialEl.classList.add('dial-flash');
+    setTimeout(() => dialEl.classList.remove('dial-flash'), 180);
+  }
+
+  updateDialStatus();
+}
+
+function updateDialStatus() {
+  const currentWord = dialIndices.map((idx, col) => dialLetters[col][idx]).join('').toLowerCase();
+  const statusBox = document.getElementById('diallock-status-box');
+
+  document.querySelectorAll('.dial-tile').forEach((tile, col) => {
+    const letter = dialLetters[col][dialIndices[col]];
+    const target = 'CHERISH'[col];
+    if (letter === target) {
+      tile.classList.add('locked');
+    } else {
+      tile.classList.remove('locked');
+    }
+  });
+
+  if (statusBox) {
+    if (currentWord === 'cherish') {
+      statusBox.innerHTML = 'STATUS: <strong class="green-text">ALL DIALS LOCKED</strong> › PASSCODE: <strong class="hl">"cherish"</strong>';
+      statusBox.className = 'diallock-status locked';
+    } else {
+      statusBox.innerHTML = 'STATUS: LOCK CONSOLE ENGAGED';
+      statusBox.className = 'diallock-status';
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   MODULE 18 — BINARY SUM CHECK REGISTER
+   ══════════════════════════════════════════ */
+const scWeights = [14, 25, 39, 52, 68, 85, 99, 120];
+let scStates = Array(8).fill(0);
+
+function initSumCheck() {
+  scStates = Array(8).fill(0);
+  updateSumCheckUI();
+}
+
+function toggleSumCheckNode(idx) {
+  scStates[idx] = scStates[idx] === 1 ? 0 : 1;
+  updateSumCheckUI();
+}
+
+function updateSumCheckUI() {
+  let sum = 0;
+  for (let i = 0; i < 8; i++) {
+    const node = document.getElementById('sc-node-' + i);
+    const btn = document.getElementById('sc-btn-' + i);
+    if (node && btn) {
+      btn.textContent = scStates[i];
+      if (scStates[i] === 1) {
+        node.classList.add('active');
+        sum += scWeights[i];
+      } else {
+        node.classList.remove('active');
+      }
+    }
+  }
+
+  const totalVal = document.getElementById('sc-total-val');
+  const statusBox = document.getElementById('sumcheck-status-box');
+  
+  if (totalVal) {
+    totalVal.textContent = sum + ' / 244';
+    if (sum === 244) {
+      totalVal.classList.add('matched');
+    } else {
+      totalVal.classList.remove('matched');
+    }
+  }
+
+  if (statusBox) {
+    if (sum === 244) {
+      statusBox.innerHTML = 'DECRYPT STATUS: <strong class="green-text">REGISTER CHECKSUM SECURED</strong> › KEYWORD: <strong class="hl">"beloved"</strong>';
+      statusBox.className = 'sumcheck-status success';
+    } else {
+      statusBox.innerHTML = 'STATUS: WAITING FOR COMBINATORIAL INPUT';
+      statusBox.className = 'sumcheck-status';
+    }
+  }
+}
+
+/* ══════════════════════════════════════════
+   MODULE 19 — SQL INJECTION LOG FORENSICS
+   ══════════════════════════════════════════ */
+const serverLogPool = [
+  '192.168.12.42 - - [12/Jun/2026:14:10:01] "GET /robots.txt HTTP/1.1" 200 42',
+  '192.168.12.42 - - [12/Jun/2026:14:10:05] "GET /admin/login.php HTTP/1.1" 404 152',
+  '192.168.12.42 - - [12/Jun/2026:14:10:15] "GET /wp-admin/ HTTP/1.1" 404 152',
+  '192.168.12.42 - - [12/Jun/2026:14:11:00] "GET /config.json HTTP/1.1" 404 152',
+  '10.105.2.18 - - [12/Jun/2026:14:12:02] "POST /login HTTP/1.1" 401 240 "user=admin&pass=12345"',
+  '10.105.2.18 - - [12/Jun/2026:14:12:15] "POST /login HTTP/1.1" 401 240 "user=admin&pass=admin123"',
+  '10.105.2.18 - - [12/Jun/2026:14:12:30] "POST /login HTTP/1.1" 401 240 "user=admin&pass=password"',
+  '10.105.2.18 - - [12/Jun/2026:14:13:01] "POST /login HTTP/1.1" 401 240 "user=root&pass=root"',
+  '10.105.2.18 - - [12/Jun/2026:14:13:20] "POST /login HTTP/1.1" 403 125 "user=admin&pass=guest"',
+  '172.16.5.99 - - [12/Jun/2026:14:14:02] "GET /items?cat=1 HTTP/1.1" 200 320',
+  "172.16.5.99 - - [12/Jun/2026:14:14:15] \"GET /items?cat=1' HTTP/1.1\" 500 1485 \"SQL syntax error near ''' at line 1\"",
+  "172.16.5.99 - - [12/Jun/2026:14:15:00] \"GET /items?cat=1' UNION SELECT null,null -- HTTP/1.1\" 200 320",
+  "172.16.5.99 - - [12/Jun/2026:14:15:25] \"GET /items?cat=1' UNION SELECT username,password FROM users -- HTTP/1.1\" 200 8420",
+  "172.16.5.99 - - [12/Jun/2026:14:16:10] \"GET /items?cat=1' UNION SELECT flag,secret FROM secrets -- HTTP/1.1\" 200 5200",
+  '192.168.1.10 - - [12/Jun/2026:14:17:05] "GET /index.html HTTP/1.1" 200 3820',
+  '192.168.1.10 - - [12/Jun/2026:14:17:10] "GET /style.css HTTP/1.1" 200 12500',
+  '192.168.1.10 - - [12/Jun/2026:14:17:15] "GET /logo.png HTTP/1.1" 200 48000',
+  '10.105.2.18 - - [12/Jun/2026:14:18:00] "POST /login HTTP/1.1" 401 240 "user=guest&pass=guest"',
+  '192.168.12.42 - - [12/Jun/2026:14:20:00] "GET /.git/config HTTP/1.1" 404 152',
+  '172.16.5.99 - - [12/Jun/2026:14:21:05] "POST /admin/login HTTP/1.1" 302 0 "user=admin&pass=$2y$12$K1d..."'
+];
+
+function initLogAuditing() {
+  const searchInput = document.getElementById('log-search-input');
+  const ipInput = document.getElementById('attacker-ip-input');
+  const decryptStatus = document.getElementById('forensics-status-box');
+  
+  if (searchInput) searchInput.value = '';
+  if (ipInput) ipInput.value = '';
+  if (decryptStatus) {
+    decryptStatus.textContent = 'AWAITING CORRECT ATTACKER IP CORRELATION KEY...';
+    decryptStatus.className = 'forensics-decrypt-status';
+  }
+
+  filterForensicLogs();
+}
+
+function filterForensicLogs() {
+  const searchInput = document.getElementById('log-search-input');
+  const terminal = document.getElementById('log-terminal-output');
+  if (!terminal) return;
+
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  terminal.innerHTML = '';
+
+  serverLogPool.forEach(line => {
+    if (!query || line.toLowerCase().includes(query)) {
+      const div = document.createElement('div');
+      div.className = 'log-line';
+      
+      // Syntax highlighting for logs
+      if (line.includes(' 200 ')) {
+        if (line.includes('UNION') || line.includes('SELECT')) {
+          div.className += ' hl-success'; // Intrusion exfil success
+        }
+      } else if (line.includes(' 500 ')) {
+        div.className += ' hl-danger';
+      } else if (line.includes(' 401 ') || line.includes(' 403 ')) {
+        div.className += ' hl-warn';
+      }
+      
+      div.textContent = line;
+      terminal.appendChild(div);
+    }
+  });
+}
+
+function decryptLogPayload() {
+  const ipInput = document.getElementById('attacker-ip-input');
+  const statusBox = document.getElementById('forensics-status-box');
+  
+  if (!ipInput || !statusBox) return;
+
+  const val = ipInput.value.trim();
+  if (val === '172.16.5.99') {
+    statusBox.textContent = 'DECRYPTING CORE DUMP PACKET...';
+    statusBox.className = 'forensics-decrypt-status success';
+    
+    setTimeout(() => {
+      statusBox.innerHTML = 'CORRELATION KEY VALIDATED! PAYLOAD RESOLVED: <strong class="hl">"memories"</strong>';
+    }, 1200);
+  } else {
+    statusBox.textContent = 'DECRYPTION FAILURE: INVALID CORRELATION KEY IP HASH.';
+    statusBox.className = 'forensics-decrypt-status error-text';
+  }
+}
+
+function resetProgress() {
+  if (confirm("Are you sure you want to reset all progress? This cannot be undone.")) {
+    localStorage.removeItem('op_hiba_cleared_stages');
+    localStorage.removeItem('op_hiba_active_screen');
+    window.location.reload();
+  }
+}
+
+
 // ── Enter key submit ──
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Enter') return;
@@ -1073,7 +2023,7 @@ document.addEventListener('keydown', function(e) {
   const match = active.id.match(/screen-(\d+)/);
   if (match) {
     const stage = parseInt(match[1]);
-    if (stage >= 1 && stage <= 9) check(stage);
+    if (stage >= 1 && stage <= 19) check(stage);
   }
 });
 
@@ -1085,4 +2035,31 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
   initMatrix();
+
+  // Load progress
+  const savedStages = localStorage.getItem('op_hiba_cleared_stages');
+  if (savedStages) {
+    try {
+      clearedStages = JSON.parse(savedStages);
+      clearedStages.forEach(stage => {
+        const input = document.getElementById('input-' + stage);
+        if (input) input.value = ANSWERS[stage];
+        const kc = document.getElementById('key-' + stage);
+        const kv = document.getElementById('kv-' + stage);
+        if (kc && kv) {
+          kv.textContent = KEY_FRAGMENTS[stage];
+          kc.classList.remove('hidden');
+        }
+      });
+    } catch (e) {
+      console.error("Error restoring stages progress", e);
+    }
+  }
+
+  const savedScreen = localStorage.getItem('op_hiba_active_screen');
+  if (savedScreen && savedScreen !== 'screen-boot') {
+    goTo(savedScreen);
+  } else {
+    goTo('screen-boot');
+  }
 });
