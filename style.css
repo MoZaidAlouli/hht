@@ -2320,3 +2320,76 @@ body {
   color: var(--green);
   font-weight: 600;
 }
+
+/* ══════════════════════════════════════════
+   GITHUB PAGES COMPATIBILITY FIXES
+   ══════════════════════════════════════════ */
+
+/* FIX: Terminal bar reset button layout — prevent overflow on narrow screens */
+.terminal-bar {
+  flex-wrap: wrap;
+  min-height: 38px;
+}
+
+/* FIX: Ensure reset button stays on the right and never overflows */
+.btn-reset-global {
+  margin-left: auto;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* FIX: Waveform canvas — explicit sizing fallback */
+.waveform-canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* FIX: Spectrogram canvas explicit height */
+#spectrogram-canvas {
+  display: block;
+  height: 150px !important;
+}
+
+/* FIX: Ensure screens always render as flex when active (not overridden by display:none timing) */
+.screen.active {
+  display: flex !important;
+}
+
+/* FIX: Locked spectrogram signal style */
+.clue-block.locked-signal {
+  background: rgba(0, 229, 160, 0.05);
+  border: 1px solid rgba(0, 229, 160, 0.2);
+  border-left: 3px solid var(--green);
+}
+
+/* FIX: Mobile — prevent horizontal overflow on small screens */
+@media (max-width: 420px) {
+  .terminal-title {
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .vigenere-container .vig-chars-row,
+  .vigenere-container .vig-shifts-row {
+    gap: 5px;
+  }
+  .vig-char-card, .vig-shift-card {
+    width: 36px;
+    height: 48px;
+  }
+  .vig-char-card .vig-val,
+  .vig-char-card .vig-plain-val {
+    font-size: 0.9rem;
+  }
+  .diallock-grid {
+    gap: 5px;
+  }
+  .dial-tile {
+    width: 44px;
+  }
+  .dial-letter {
+    font-size: 1.4rem;
+  }
+}

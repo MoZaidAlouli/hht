@@ -1,7 +1,7 @@
 let clearedStages = [];
 /* ══════════════════════════════════════════
    OPERATION: HIBA — script.js
-   Expanded to 10 visual interactive modules.
+   GitHub Pages compatible version
    ══════════════════════════════════════════ */
 
 // ── Answers ──
@@ -71,6 +71,10 @@ function goTo(screenId) {
     cancelAnimationFrame(waveAnimFrame);
     waveAnimFrame = null;
   }
+  if (specAnimFrame) {
+    cancelAnimationFrame(specAnimFrame);
+    specAnimFrame = null;
+  }
   if (radioStaticInterval) {
     clearInterval(radioStaticInterval);
     radioStaticInterval = null;
@@ -81,15 +85,10 @@ function goTo(screenId) {
   }
   // Morse cleanup
   if (morseTimer) {
-    clearInterval(morseTimer);
+    clearTimeout(morseTimer);
     morseTimer = null;
   }
-  if (morseAudioCtx) {
-    try {
-      morseAudioCtx.close();
-    } catch(e) {}
-    morseAudioCtx = null;
-  }
+  stopMorseBeep();
   morsePlaying = false;
 
   document.querySelectorAll('.screen').forEach(s => {
@@ -103,26 +102,28 @@ function goTo(screenId) {
   target.classList.add('active');
   window.scrollTo(0, 0);
 
-  // Initialize specific screens
-  if (screenId === 'screen-3') initRadioTuner();
-  if (screenId === 'screen-4') initCaesarSlider();
-  if (screenId === 'screen-5') resetPatternLock();
-  if (screenId === 'screen-6') initWaveform();
-  if (screenId === 'screen-7') initBase64Matrix();
-  if (screenId === 'screen-8') initStarMapper();
-  if (screenId === 'screen-9') initEqualizer();
-  if (screenId === 'screen-10') initMorseCode();
-  if (screenId === 'screen-11') initEnigma();
-  if (screenId === 'screen-12') initNetworkRouter();
-  if (screenId === 'screen-13') initXorManipulator();
-  if (screenId === 'screen-14') initLogicCircuit();
-  if (screenId === 'screen-15') initVigenere();
-  if (screenId === 'screen-16') initSpectrogramFilter();
-  if (screenId === 'screen-17') initWordLock();
-  if (screenId === 'screen-18') initSumCheck();
-  if (screenId === 'screen-19') initLogAuditing();
-  if (screenId === 'screen-20') initKeyring();
-  if (screenId === 'screen-final') initFinalScreen();
+  // Use requestAnimationFrame to ensure the element is laid out before initializing canvases
+  requestAnimationFrame(() => {
+    if (screenId === 'screen-3') initRadioTuner();
+    if (screenId === 'screen-4') initCaesarSlider();
+    if (screenId === 'screen-5') resetPatternLock();
+    if (screenId === 'screen-6') initWaveform();
+    if (screenId === 'screen-7') initBase64Matrix();
+    if (screenId === 'screen-8') initStarMapper();
+    if (screenId === 'screen-9') initEqualizer();
+    if (screenId === 'screen-10') initMorseCode();
+    if (screenId === 'screen-11') initEnigma();
+    if (screenId === 'screen-12') initNetworkRouter();
+    if (screenId === 'screen-13') initXorManipulator();
+    if (screenId === 'screen-14') initLogicCircuit();
+    if (screenId === 'screen-15') initVigenere();
+    if (screenId === 'screen-16') initSpectrogramFilter();
+    if (screenId === 'screen-17') initWordLock();
+    if (screenId === 'screen-18') initSumCheck();
+    if (screenId === 'screen-19') initLogAuditing();
+    if (screenId === 'screen-20') initKeyring();
+    if (screenId === 'screen-final') initFinalScreen();
+  });
 }
 
 // ── Hint ──
@@ -220,13 +221,14 @@ function initRadioTuner() {
   if (!slider || !freqVal || !status) return;
 
   if (radioStaticInterval) clearInterval(radioStaticInterval);
-  
+  radioStaticInterval = null;
+
   function updateTuner() {
     const val = parseFloat(slider.value).toFixed(1);
     freqVal.textContent = val;
-    
+
     if (Math.abs(val - 104.7) < 0.05) {
-      clearInterval(radioStaticInterval);
+      if (radioStaticInterval) { clearInterval(radioStaticInterval); radioStaticInterval = null; }
       status.innerHTML = '› <span class="hl">LOCKED: [DECRYPTED IDENT CODE] › "hiba"</span>';
       status.className = 'signal-status locked';
     } else {
@@ -237,11 +239,12 @@ function initRadioTuner() {
   }
 
   function startStaticInterval() {
+    if (radioStaticInterval) clearInterval(radioStaticInterval);
     radioStaticInterval = setInterval(() => {
       const val = parseFloat(slider.value).toFixed(1);
       if (Math.abs(val - 104.7) >= 0.05) {
         let staticChars = '';
-        const pool = '!@#$%^&*()_+{}:"<>?|[];\',./~`';
+        const pool = '!@#$%^&*()_+{}:"<>?|[];\',./' ;
         for (let i = 0; i < 12; i++) {
           staticChars += pool[Math.floor(Math.random() * pool.length)];
         }
@@ -335,12 +338,12 @@ function redrawPatternCanvas() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+
   ctx.strokeStyle = '#00e5a0';
   ctx.lineWidth = 5;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  
+
   drawnSegments.forEach(seg => {
     const [a, b] = seg.split('-').map(Number);
     const posA = getNodeCenter(a);
@@ -366,7 +369,7 @@ function resetPatternLock() {
   activeNode = null;
   drawnSegments = [];
   currentMousePos = null;
-  
+
   document.querySelectorAll('.pattern-node').forEach(node => {
     node.classList.remove('active', 'error');
   });
@@ -377,10 +380,13 @@ function resetPatternLock() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
-  document.getElementById('m5-lock-wrapper').classList.remove('hidden');
-  document.getElementById('m5-chat-wrapper').classList.add('hidden');
-  document.getElementById('m5-title').textContent = "Unlock Chat Logs";
-  
+  const lockWrapper = document.getElementById('m5-lock-wrapper');
+  const chatWrapper = document.getElementById('m5-chat-wrapper');
+  const title = document.getElementById('m5-title');
+  if (lockWrapper) lockWrapper.classList.remove('hidden');
+  if (chatWrapper) chatWrapper.classList.add('hidden');
+  if (title) title.textContent = "Unlock Chat Logs";
+
   const fb = document.getElementById('feedback-5');
   if (fb) fb.classList.add('hidden');
 }
@@ -411,19 +417,21 @@ function handlePatternMove(clientX, clientY) {
     redrawPatternCanvas();
     return;
   }
-  
+
   // Try connecting activeNode -> j
   const segment = Math.min(activeNode, j) + '-' + Math.max(activeNode, j);
   const validSegments = ["0-3", "3-6", "3-4", "4-5", "2-5", "5-8"];
-  
+
   if (validSegments.includes(segment)) {
     if (!drawnSegments.includes(segment)) {
       drawnSegments.push(segment);
     }
-    document.querySelector(`.pattern-node[data-index="${activeNode}"]`).classList.add('active');
-    document.querySelector(`.pattern-node[data-index="${j}"]`).classList.add('active');
+    const nodeA = document.querySelector(`.pattern-node[data-index="${activeNode}"]`);
+    const nodeB = document.querySelector(`.pattern-node[data-index="${j}"]`);
+    if (nodeA) nodeA.classList.add('active');
+    if (nodeB) nodeB.classList.add('active');
     activeNode = j;
-    
+
     // Check win condition
     if (drawnSegments.length === 6) {
       activeNode = null;
@@ -451,7 +459,7 @@ function triggerPatternError() {
     node.classList.remove('active');
     node.classList.add('error');
   });
-  
+
   const canvas = document.getElementById('pattern-canvas');
   if (canvas) {
     const ctx = canvas.getContext('2d');
@@ -465,10 +473,13 @@ function triggerPatternError() {
 }
 
 function unlockChatLogs() {
-  document.getElementById('m5-lock-wrapper').classList.add('hidden');
-  document.getElementById('m5-chat-wrapper').classList.remove('hidden');
-  document.getElementById('m5-title').textContent = "MODULE 05 / 10 — COMMUNICATION INTERCEPT";
-  
+  const lockWrapper = document.getElementById('m5-lock-wrapper');
+  const chatWrapper = document.getElementById('m5-chat-wrapper');
+  const title = document.getElementById('m5-title');
+  if (lockWrapper) lockWrapper.classList.add('hidden');
+  if (chatWrapper) chatWrapper.classList.remove('hidden');
+  if (title) title.textContent = "MODULE 05 / 20 — COMMUNICATION INTERCEPT";
+
   loadWhatsAppThread();
 }
 
@@ -510,24 +521,24 @@ function loadWhatsAppThread() {
   function addNextMsg() {
     if (idx >= chatMessages.length) return;
     const msg = chatMessages[idx];
-    
+
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg ${msg.sender}`;
-    
+
     const bubble = document.createElement('div');
     bubble.className = `chat-bubble ${msg.sender}-bubble`;
     bubble.innerHTML = msg.text;
-    
+
     const meta = document.createElement('div');
     meta.className = 'chat-meta';
     meta.textContent = msg.time;
-    
+
     wrapper.appendChild(bubble);
     wrapper.appendChild(meta);
     container.appendChild(wrapper);
-    
+
     container.scrollTop = container.scrollHeight;
-    
+
     idx++;
     setTimeout(addNextMsg, idx === chatMessages.length - 1 ? 1400 : 700);
   }
@@ -542,12 +553,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const onStart = (e) => {
       const activeScreen = document.querySelector('.screen.active');
       if (!activeScreen || activeScreen.id !== 'screen-5') return;
-      
+
       e.preventDefault();
       activeNode = parseInt(node.getAttribute('data-index'));
       node.classList.add('active');
       const touch = e.touches ? e.touches[0] : e;
-      const rect = document.getElementById('pattern-canvas').getBoundingClientRect();
+      const canvas = document.getElementById('pattern-canvas');
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
       currentMousePos = {
         x: touch.clientX - rect.left,
         y: touch.clientY - rect.top
@@ -595,30 +608,49 @@ function initWaveform() {
   const canvas = document.getElementById('waveform-canvas');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  
-  canvas.width = canvas.clientWidth;
-  canvas.height = canvas.clientHeight;
-  
+
+  // FIX: Use the canvas's actual pixel size from its container, not clientWidth/clientHeight which may be 0
+  function resizeCanvas() {
+    const wrapper = canvas.parentElement;
+    if (wrapper) {
+      const w = wrapper.offsetWidth || 560;
+      const h = wrapper.offsetHeight || 120;
+      canvas.width = w;
+      canvas.height = h;
+    } else {
+      canvas.width = 560;
+      canvas.height = 120;
+    }
+  }
+  resizeCanvas();
+
   const phaseSlider = document.getElementById('wave-phase');
   const freqSlider = document.getElementById('wave-freq');
   const ampSlider = document.getElementById('wave-amp');
-  
+
   const valPhase = document.getElementById('val-phase');
   const valFreq = document.getElementById('val-freq');
   const valAmp = document.getElementById('val-amp');
   const syncValTxt = document.getElementById('sync-val');
   const statusBox = document.getElementById('waveform-status-box');
 
+  if (!phaseSlider || !freqSlider || !ampSlider) return;
+
   function draw() {
+    if (!document.getElementById('screen-6') || !document.getElementById('screen-6').classList.contains('active')) {
+      waveAnimFrame = null;
+      return;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     const userPhase = parseInt(phaseSlider.value);
     const userFreq = parseInt(freqSlider.value);
     const userAmp = parseInt(ampSlider.value);
-    
-    valPhase.textContent = userPhase;
-    valFreq.textContent = userFreq;
-    valAmp.textContent = userAmp;
+
+    if (valPhase) valPhase.textContent = userPhase;
+    if (valFreq) valFreq.textContent = userFreq;
+    if (valAmp) valAmp.textContent = userAmp;
 
     // Target parameters
     const targetPhase = 180;
@@ -629,21 +661,19 @@ function initWaveform() {
     const diffPhase = Math.abs(userPhase - targetPhase) / 180;
     const diffFreq = Math.abs(userFreq - targetFreq) / 30;
     const diffAmp = Math.abs(userAmp - targetAmp) / 50;
-    
+
     let sync = 1 - (diffPhase * 0.45 + diffFreq * 0.4 + diffAmp * 0.15);
     if (sync < 0) sync = 0;
     let syncPct = Math.round(sync * 100);
-    
+
     const isSynced = syncPct >= 96;
     if (isSynced) {
       syncPct = 100;
-      syncValTxt.textContent = "100% LOCKED";
-      syncValTxt.className = "sync-val synced";
-      statusBox.innerHTML = '<span class="clue-tag">› SIGNAL SECURED</span><br/>Voice signature matched. Decrypted payload: <strong class="hl">"home"</strong>';
+      if (syncValTxt) { syncValTxt.textContent = "100% LOCKED"; syncValTxt.className = "sync-val synced"; }
+      if (statusBox) statusBox.innerHTML = '<span class="clue-tag">› SIGNAL SECURED</span><br/>Voice signature matched. Decrypted payload: <strong class="hl">"home"</strong>';
     } else {
-      syncValTxt.textContent = syncPct + "%";
-      syncValTxt.className = "sync-val";
-      statusBox.innerHTML = '<span class="clue-tag">› MISSION DIRECTIVE</span><br/>Adjust the Phase, Frequency, and Amplitude sliders until the sync percentage is 95% or higher. The voice memo will then decode.';
+      if (syncValTxt) { syncValTxt.textContent = syncPct + "%"; syncValTxt.className = "sync-val"; }
+      if (statusBox) statusBox.innerHTML = '<span class="clue-tag">› MISSION DIRECTIVE</span><br/>Adjust the Phase, Frequency, and Amplitude sliders until the sync percentage is 95% or higher.';
     }
 
     const t = Date.now() * 0.005;
@@ -675,12 +705,11 @@ function initWaveform() {
     waveAnimFrame = requestAnimationFrame(draw);
   }
 
-  if (waveAnimFrame) cancelAnimationFrame(waveAnimFrame);
-  draw();
+  if (waveAnimFrame) { cancelAnimationFrame(waveAnimFrame); waveAnimFrame = null; }
+  waveAnimFrame = requestAnimationFrame(draw);
 
   window.addEventListener('resize', () => {
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    resizeCanvas();
   });
 }
 
@@ -701,16 +730,20 @@ function initBase64Matrix() {
   progress.textContent = "";
   btn.disabled = false;
 
-  btn.onclick = () => {
-    btn.disabled = true;
+  // Remove old listener by replacing with fresh clone
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+
+  newBtn.onclick = () => {
+    newBtn.disabled = true;
+    if (matrixDecodeInterval) { clearInterval(matrixDecodeInterval); matrixDecodeInterval = null; }
     let ticks = 0;
     const targetString = "always yours";
     const finalText = "always yours";
 
     matrixDecodeInterval = setInterval(() => {
       ticks++;
-      
-      // Generate tumbling garbage text
+
       let tumbling = "";
       const pool = "!@#$%^&*()_+{}[]:;<>?,./";
       for (let i = 0; i < targetString.length; i++) {
@@ -720,12 +753,13 @@ function initBase64Matrix() {
           tumbling += pool[Math.floor(Math.random() * pool.length)];
         }
       }
-      
+
       display.textContent = tumbling.toUpperCase();
       progress.textContent = `DECRYPTING CORE BLOCKS... ${Math.round((ticks / 15) * 100)}%`;
 
       if (ticks >= 15) {
         clearInterval(matrixDecodeInterval);
+        matrixDecodeInterval = null;
         display.textContent = finalText.toUpperCase();
         display.classList.add('decrypted');
         progress.textContent = "DECRYPTION COMPLETE. DECRYPTED IDENTIFIER SECURED.";
@@ -795,8 +829,12 @@ function initStarMapper() {
 
   document.querySelectorAll('.star-node').forEach(node => {
     node.classList.remove('selected', 'glow');
-    
-    // Bind click listener
+
+    const newNode = node.cloneNode(true);
+    node.parentNode.replaceChild(newNode, node);
+  });
+
+  document.querySelectorAll('.star-node').forEach(node => {
     node.onclick = () => {
       if (starCompleted) return;
       const idx = parseInt(node.getAttribute('data-star'));
@@ -810,8 +848,6 @@ function initStarMapper() {
           flashStarsError();
         }
       } else {
-        const last = starHistory[starHistory.length - 1];
-        // Find expected next star
         const expectedNextIdx = starHistory.length;
         const expectedVal = starExpectedSequence[expectedNextIdx];
 
@@ -848,7 +884,7 @@ function flashStarsError() {
     node.classList.add('glow');
     node.style.transform = 'translate(-50%, -50%) scale(1.1)';
   });
-  
+
   setTimeout(() => {
     document.querySelectorAll('.star-node').forEach(node => {
       node.classList.remove('glow');
@@ -863,6 +899,8 @@ function flashStarsError() {
 
 /* ══════════════════════════════════════════
    MODULE 10 — MORSE CODE TRANSCEIVER
+   FIX: AudioContext handling for browsers with
+   autoplay policy (GitHub Pages / HTTPS)
    ══════════════════════════════════════════ */
 let morsePlaying = false;
 let morseTimer = null;
@@ -886,45 +924,58 @@ function buildMorseTimeline() {
       const symbol = symbols[i];
       const units = (symbol === '.') ? 1 : 3;
       morseTimeline.push({ state: true, units: units });
-      // element spacing
       if (i < symbols.length - 1) {
         morseTimeline.push({ state: false, units: 1 });
       }
     }
-    // character spacing
     morseTimeline.push({ state: false, units: 3 });
   }
-  // word loop spacing
   morseTimeline.push({ state: false, units: 7 });
 }
 
-function startMorseBeep() {
+// FIX: Create AudioContext lazily on user gesture, never auto-create it
+function ensureMorseAudioCtx() {
   if (!morseAudioCtx) {
-    morseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+      morseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {
+      console.warn('AudioContext not available:', e);
+      return false;
+    }
   }
+  // Resume if suspended (browser autoplay policy)
   if (morseAudioCtx.state === 'suspended') {
-    morseAudioCtx.resume();
+    morseAudioCtx.resume().catch(() => {});
   }
+  return morseAudioCtx.state !== 'closed';
+}
+
+function startMorseBeep() {
+  if (!ensureMorseAudioCtx()) return;
   stopMorseBeep();
 
-  morseOscillator = morseAudioCtx.createOscillator();
-  morseGainNode = morseAudioCtx.createGain();
+  try {
+    morseOscillator = morseAudioCtx.createOscillator();
+    morseGainNode = morseAudioCtx.createGain();
 
-  morseOscillator.type = 'sine';
-  morseOscillator.frequency.value = 800;
+    morseOscillator.type = 'sine';
+    morseOscillator.frequency.value = 800;
 
-  morseGainNode.gain.setValueAtTime(0.0, morseAudioCtx.currentTime);
-  morseGainNode.gain.linearRampToValueAtTime(0.08, morseAudioCtx.currentTime + 0.01);
+    morseGainNode.gain.setValueAtTime(0.0, morseAudioCtx.currentTime);
+    morseGainNode.gain.linearRampToValueAtTime(0.08, morseAudioCtx.currentTime + 0.01);
 
-  morseOscillator.connect(morseGainNode);
-  morseGainNode.connect(morseAudioCtx.destination);
-  morseOscillator.start();
+    morseOscillator.connect(morseGainNode);
+    morseGainNode.connect(morseAudioCtx.destination);
+    morseOscillator.start();
+  } catch(e) {
+    console.warn('Morse beep error:', e);
+  }
 }
 
 function stopMorseBeep() {
   if (morseOscillator) {
     try {
-      if (morseGainNode && morseAudioCtx) {
+      if (morseGainNode && morseAudioCtx && morseAudioCtx.state !== 'closed') {
         morseGainNode.gain.setValueAtTime(morseGainNode.gain.value, morseAudioCtx.currentTime);
         morseGainNode.gain.linearRampToValueAtTime(0.0, morseAudioCtx.currentTime + 0.01);
       }
@@ -934,6 +985,7 @@ function stopMorseBeep() {
       }, 15);
     } catch(e) {}
     morseOscillator = null;
+    morseGainNode = null;
   }
 }
 
@@ -970,8 +1022,12 @@ function initMorseCode() {
   morseAudioEnabled = false;
   morseWPM = 12;
   morseIndex = 0;
-  
-  if (morseTimer) clearTimeout(morseTimer);
+
+  if (morseTimer) { clearTimeout(morseTimer); morseTimer = null; }
+  stopMorseBeep();
+
+  // FIX: Don't close AudioContext on init — just leave it suspended or null
+  // Closing and recreating causes issues in some browsers
   setMorseIndicator(false);
   buildMorseTimeline();
 
@@ -980,38 +1036,44 @@ function initMorseCode() {
   const slider = document.getElementById('morse-speed-slider');
   const wpmTxt = document.getElementById('morse-wpm-txt');
 
+  // Replace buttons to remove stale listeners
   if (playBtn) {
-    playBtn.textContent = "PLAY TRANSMISSION";
-    playBtn.onclick = () => {
+    const newPlayBtn = playBtn.cloneNode(true);
+    playBtn.parentNode.replaceChild(newPlayBtn, playBtn);
+    const pb = document.getElementById('btn-morse-play-pause');
+    pb.textContent = "PLAY TRANSMISSION";
+    pb.classList.remove('active');
+    pb.onclick = () => {
       morsePlaying = !morsePlaying;
       if (morsePlaying) {
-        playBtn.textContent = "PAUSE TRANSMISSION";
-        playBtn.classList.add('active');
+        pb.textContent = "PAUSE TRANSMISSION";
+        pb.classList.add('active');
         playNextMorseStep();
       } else {
-        playBtn.textContent = "PLAY TRANSMISSION";
-        playBtn.classList.remove('active');
-        if (morseTimer) clearTimeout(morseTimer);
+        pb.textContent = "PLAY TRANSMISSION";
+        pb.classList.remove('active');
+        if (morseTimer) { clearTimeout(morseTimer); morseTimer = null; }
         setMorseIndicator(false);
       }
     };
   }
 
   if (audioBtn) {
-    audioBtn.textContent = "ENABLE AUDIO (BEEP)";
-    audioBtn.classList.remove('active');
-    audioBtn.onclick = () => {
+    const newAudioBtn = audioBtn.cloneNode(true);
+    audioBtn.parentNode.replaceChild(newAudioBtn, audioBtn);
+    const ab = document.getElementById('btn-morse-audio-toggle');
+    ab.textContent = "ENABLE AUDIO (BEEP)";
+    ab.classList.remove('active');
+    ab.onclick = () => {
+      // FIX: Create AudioContext here, on direct user gesture
       morseAudioEnabled = !morseAudioEnabled;
       if (morseAudioEnabled) {
-        audioBtn.textContent = "DISABLE AUDIO (BEEP)";
-        audioBtn.classList.add('active');
-        // trigger context creation
-        if (!morseAudioCtx) {
-          morseAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        ab.textContent = "DISABLE AUDIO (BEEP)";
+        ab.classList.add('active');
+        ensureMorseAudioCtx(); // create/resume on user gesture
       } else {
-        audioBtn.textContent = "ENABLE AUDIO (BEEP)";
-        audioBtn.classList.remove('active');
+        ab.textContent = "ENABLE AUDIO (BEEP)";
+        ab.classList.remove('active');
         stopMorseBeep();
       }
     };
@@ -1031,7 +1093,7 @@ function initMorseCode() {
 /* ══════════════════════════════════════════
    MODULE 11 — ENIGMA ROTOR SIMULATOR
    ══════════════════════════════════════════ */
-let rotorValues = [0, 0, 0]; // 0-25 offset
+let rotorValues = [0, 0, 0];
 
 function initEnigma() {
   rotorValues = [0, 0, 0];
@@ -1052,9 +1114,9 @@ function updateEnigmaUI() {
 }
 
 function updateEnigmaDecryption() {
-  const s1 = rotorValues[0] - 9; // J is 9
-  const s2 = rotorValues[1] - 13; // N is 13
-  const s3 = rotorValues[2] - 24; // Y is 24
+  const s1 = rotorValues[0] - 9;
+  const s2 = rotorValues[1] - 13;
+  const s3 = rotorValues[2] - 24;
 
   const targetWord = "journey";
   let output = "";
@@ -1172,7 +1234,7 @@ function clickRouteNode(nodeId) {
   const lastNode = routerSelectedPath[routerSelectedPath.length - 1];
   if (nodeId === lastNode) return;
 
-  const conn = routerConnections.find(c => 
+  const conn = routerConnections.find(c =>
     (c.from === lastNode && c.to === nodeId) || (c.from === nodeId && c.to === lastNode)
   );
 
@@ -1193,7 +1255,7 @@ function clickRouteNode(nodeId) {
 
   const msg = document.getElementById('route-status-msg');
   if (nodeId === 'T') {
-    if (routerCurrentLatency === 45) { // S-A-B-D-T
+    if (routerCurrentLatency === 45) {
       routerCompleted = true;
       if (msg) {
         msg.innerHTML = '› <span class="hl">ROUTE ENCRYPTED CHANNEL SECURED › "destiny"</span>';
@@ -1239,7 +1301,7 @@ function updateRouteNodeButtons() {
 /* ══════════════════════════════════════════
    MODULE 13 — XOR BITWISE MANIPULATOR
    ══════════════════════════════════════════ */
-let xorKey = 0; // 0-255
+let xorKey = 0;
 const xorCiphertext = [0x0F, 0x16, 0x0F, 0x18, 0x04, 0x0B, 0x06];
 
 function initXorManipulator() {
@@ -1318,7 +1380,6 @@ function updateLogicUI() {
     }
   }
 
-  // Gates logic evaluation
   const E = (logicInputs.A && logicInputs.B) ? 1 : 0;
   const F = (!logicInputs.C) ? 1 : 0;
   const G = (E && F) ? 1 : 0;
@@ -1329,17 +1390,12 @@ function updateLogicUI() {
   updateGateNodeUI('G', G);
   updateGateNodeUI('H', H);
 
-  const stateMsg = document.getElementById('logic-lock-state');
   const statusBox = document.getElementById('logic-status-msg');
-  if (stateMsg && statusBox) {
+  if (statusBox) {
     if (H === 1) {
-      stateMsg.textContent = 'CONFIRMED (1)';
-      stateMsg.className = 'green-text';
-      statusBox.innerHTML = 'OVERRIDE STATUS: <strong class="green-text" id="logic-lock-state">CONFIRMED (1)</strong> › KEYWORD: <strong class="hl">"patience"</strong>';
+      statusBox.innerHTML = 'OVERRIDE STATUS: <strong class="green-text">CONFIRMED (1)</strong> › KEYWORD: <strong class="hl">"patience"</strong>';
     } else {
-      stateMsg.textContent = 'LOCKED (0)';
-      stateMsg.className = 'red-text';
-      statusBox.innerHTML = 'OVERRIDE STATUS: <strong class="red-text" id="logic-lock-state">LOCKED (0)</strong>';
+      statusBox.innerHTML = 'OVERRIDE STATUS: <strong class="red-text">LOCKED (0)</strong>';
     }
   }
 }
@@ -1359,264 +1415,6 @@ function updateGateNodeUI(gateId, val) {
 
 
 /* ══════════════════════════════════════════
-   MODULE 15 — OVERRIDE KEY RING WIDGET
-   ══════════════════════════════════════════ */
-const keyringCorrectOrder = ['K4Z', 'P4R', 'H1B', '4EV', 'T0G', 'H0M', 'YRS', 'UNV', 'SYM', 'PRM', 'JNY', 'DST', 'ETN', 'PAT', 'DEV', 'INF', 'CHS', 'BLV', 'MEM'];
-let keyringCurrentSlots = Array(19).fill(null);
-
-function initKeyring() {
-  keyringCurrentSlots = Array(19).fill(null);
-  
-  const container = document.getElementById('keyring-frags-container');
-  const resetBtn = document.getElementById('btn-keyring-reset');
-  const submitBtn = document.getElementById('btn-keyring-submit');
-  const fb = document.getElementById('feedback-20');
-  
-  if (!container || !resetBtn || !submitBtn || !fb) return;
-
-  fb.classList.add('hidden');
-  submitBtn.disabled = true;
-
-  // Shuffle fragment values for display buttons
-  const frags = [...keyringCorrectOrder].sort(() => Math.random() - 0.5);
-
-  container.innerHTML = '';
-  frags.forEach(val => {
-    const btn = document.createElement('button');
-    btn.className = 'key-frag-btn';
-    btn.textContent = val;
-    btn.setAttribute('data-val', val);
-    
-    btn.addEventListener('click', () => {
-      if (btn.classList.contains('selected')) return;
-
-      const nextEmpty = keyringCurrentSlots.indexOf(null);
-      if (nextEmpty !== -1) {
-        keyringCurrentSlots[nextEmpty] = val;
-        btn.classList.add('selected');
-        btn.disabled = true;
-        updateKeyringUI();
-      }
-    });
-    
-    container.appendChild(btn);
-  });
-
-  // Slot click resets that slot
-  document.querySelectorAll('.keyring-slot').forEach(slot => {
-    slot.onclick = null; // Unbind previous
-    slot.addEventListener('click', () => {
-      const idx = parseInt(slot.getAttribute('data-index'));
-      const val = keyringCurrentSlots[idx];
-      if (val !== null) {
-        keyringCurrentSlots[idx] = null;
-        
-        const btn = container.querySelector(`.key-frag-btn[data-val="${val}"]`);
-        if (btn) {
-          btn.classList.remove('selected');
-          btn.disabled = false;
-        }
-        
-        updateKeyringUI();
-      }
-    });
-  });
-
-  resetBtn.onclick = null;
-  resetBtn.addEventListener('click', () => {
-    keyringCurrentSlots.fill(null);
-    container.querySelectorAll('.key-frag-btn').forEach(btn => {
-      btn.classList.remove('selected');
-      btn.disabled = false;
-    });
-    updateKeyringUI();
-    fb.classList.add('hidden');
-  });
-
-  submitBtn.onclick = () => {
-    const isCorrect = keyringCurrentSlots.every((val, idx) => val === keyringCorrectOrder[idx]);
-    if (isCorrect) {
-      fb.classList.remove('hidden', 'error');
-      fb.classList.add('success');
-      fb.textContent = '› OVERRIDE CONFIRMED. DECRYPTION KEY RING SECURED. LOADING TRANSMISSION DECK...';
-      
-      setTimeout(() => {
-        goTo('screen-final');
-      }, 1600);
-    } else {
-      fb.classList.remove('hidden', 'success');
-      fb.classList.add('error');
-      fb.textContent = '› INTEGRITY CHECK FAILED: SEQUENCE OUT OF CHRONOLOGICAL ORDER. RE-ARRANGE.';
-    }
-  };
-
-  updateKeyringUI();
-}
-
-function updateKeyringUI() {
-  const submitBtn = document.getElementById('btn-keyring-submit');
-  
-  keyringCurrentSlots.forEach((val, idx) => {
-    const slot = document.querySelector(`.keyring-slot[data-index="${idx}"]`);
-    const valEl = slot ? slot.querySelector('.slot-val') : null;
-    
-    if (slot && valEl) {
-      if (val !== null) {
-        valEl.textContent = val;
-        slot.classList.add('filled');
-      } else {
-        valEl.textContent = '???';
-        slot.classList.remove('filled');
-      }
-    }
-  });
-
-  const isFilled = !keyringCurrentSlots.includes(null);
-  if (submitBtn) submitBtn.disabled = !isFilled;
-}
-
-
-/* ══════════════════════════════════════════
-   FINAL SCREEN & DECORATIONS
-   ══════════════════════════════════════════ */
-function initFinalScreen() {
-  initRain();
-  buildFinalKeys();
-}
-
-function buildFinalKeys() {
-  const row = document.getElementById('final-keys-display');
-  if (!row) return;
-  row.innerHTML = '';
-  Object.entries(KEY_FRAGMENTS).forEach(([stage, val]) => {
-    const span = document.createElement('span');
-    span.className = 'fk';
-    const prefix = parseInt(stage) < 10 ? 'MOD-0' : 'MOD-';
-    span.textContent = `${prefix}${stage}: ${val}`;
-    span.style.animationDelay = (parseInt(stage) * 0.1) + 's';
-    row.appendChild(span);
-  });
-}
-
-function initMatrix() {
-  const canvas = document.getElementById('matrixCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
-  const fontSize = 13;
-  const cols = Math.floor(canvas.width / fontSize);
-  const drops = Array(cols).fill(1);
-
-  function draw() {
-    ctx.fillStyle = 'rgba(10, 12, 16, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#00e5a0';
-    ctx.font = fontSize + 'px JetBrains Mono, monospace';
-    drops.forEach((y, i) => {
-      const char = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(char, i * fontSize, y * fontSize);
-      if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
-    });
-  }
-
-  setInterval(draw, 60);
-
-  window.addEventListener('resize', () => {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-  });
-}
-
-function initRain() {
-  const container = document.getElementById('finalRain');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const chars = ['0','1','L','O','V','E','H','I','B','A','♥','◆','▲','✦'];
-  for (let i = 40; i > 0; i--) {
-    const drop = document.createElement('div');
-    drop.className = 'rain-drop';
-    drop.textContent = chars[Math.floor(Math.random() * chars.length)];
-    drop.style.left = Math.random() * 100 + 'vw';
-    drop.style.animationDuration = (4 + Math.random() * 8) + 's';
-    drop.style.animationDelay = (Math.random() * 8) + 's';
-    drop.style.opacity = (0.1 + Math.random() * 0.4).toString();
-    container.appendChild(drop);
-  }
-}
-
-
-/* ══════════════════════════════════════════
-   MODULE 09 — restored GRAPHIC EQUALIZER WIDGET
-   ══════════════════════════════════════════ */
-const eqTargets = [70, 30, 50, 80, 40];
-
-function initEqualizer() {
-  const sliders = document.querySelectorAll('.eq-slider');
-  sliders.forEach(slider => {
-    slider.oninput = () => {
-      const idx = parseInt(slider.getAttribute('data-idx'));
-      const val = parseInt(slider.value);
-      const valTxt = document.getElementById('eq-val-' + idx);
-      if (valTxt) valTxt.textContent = val + '%';
-      const target = eqTargets[idx];
-      const targetMarker = document.getElementById('eq-tgt-' + idx);
-      if (Math.abs(val - target) <= 5) {
-        if (valTxt) valTxt.classList.add('match');
-        if (targetMarker) targetMarker.classList.add('locked');
-      } else {
-        if (valTxt) valTxt.classList.remove('match');
-        if (targetMarker) targetMarker.classList.remove('locked');
-      }
-      checkEqualizerSync();
-    };
-  });
-  // Explicit init — don't rely on dispatchEvent
-  sliders.forEach(slider => {
-    const idx = parseInt(slider.getAttribute('data-idx'));
-    const val = parseInt(slider.value);
-    const valTxt = document.getElementById('eq-val-' + idx);
-    const target = eqTargets[idx];
-    const targetMarker = document.getElementById('eq-tgt-' + idx);
-    if (valTxt) {
-      valTxt.textContent = val + '%';
-      if (Math.abs(val - target) <= 5) valTxt.classList.add('match');
-      else valTxt.classList.remove('match');
-    }
-    if (targetMarker) {
-      if (Math.abs(val - target) <= 5) targetMarker.classList.add('locked');
-      else targetMarker.classList.remove('locked');
-    }
-  });
-  checkEqualizerSync();
-}
-
-function checkEqualizerSync() {
-  const sliders = document.querySelectorAll('.eq-slider');
-  let allMatched = true;
-  sliders.forEach(slider => {
-    const idx = parseInt(slider.getAttribute('data-idx'));
-    const val = parseInt(slider.value);
-    if (Math.abs(val - eqTargets[idx]) > 5) {
-      allMatched = false;
-    }
-  });
-
-  const statusBox = document.getElementById('eq-status-box');
-  if (statusBox) {
-    if (allMatched) {
-      statusBox.innerHTML = '<span class="clue-tag" style="color:var(--green)">› SIGNAL SECURED</span><br/>Harmonic resonance secured. Decrypted payload: <strong class="hl">"symphony"</strong>';
-    } else {
-      statusBox.innerHTML = '<span class="clue-tag">› SYSTEM STATUS</span><br/>Adjust faders until all channels say "LOCKED" (within 5% of their targets). A harmonic word will then decrypt.';
-    }
-  }
-}
-
-/* ══════════════════════════════════════════
    MODULE 15 — VIGENERE DECRYPTION DECK
    ══════════════════════════════════════════ */
 function initVigenere() {
@@ -1625,11 +1423,9 @@ function initVigenere() {
   keyInput.value = '';
 
   const ciphertext = "OSQSEWJR";
-  
+
   function updateVigenere() {
     const key = keyInput.value.toLowerCase().replace(/[^a-z]/g, '');
-    const cards = document.querySelectorAll('.vig-plain-val');
-    const shiftCards = document.querySelectorAll('.vig-shift-val');
 
     for (let i = 0; i < ciphertext.length; i++) {
       const cChar = ciphertext[i];
@@ -1639,7 +1435,6 @@ function initVigenere() {
         shift = keyChar.charCodeAt(0) - 97;
       }
 
-      // Calculate decrypted character
       let code = cChar.charCodeAt(0);
       let pCode = code - shift;
       if (pCode < 65) pCode += 26;
@@ -1660,13 +1455,21 @@ function initVigenere() {
     }
   }
 
-  keyInput.addEventListener('input', updateVigenere);
+  // Replace to remove stale listeners
+  const newInput = keyInput.cloneNode(true);
+  keyInput.parentNode.replaceChild(newInput, keyInput);
+  const freshInput = document.getElementById('vig-key-input');
+  freshInput.value = '';
+  freshInput.addEventListener('input', updateVigenere);
   updateVigenere();
 }
 
 /* ══════════════════════════════════════════
    MODULE 16 — SPECTROGRAM PEAK FILTER
+   FIX: Use explicit pixel dimensions for canvas
    ══════════════════════════════════════════ */
+let specAnimFrame = null;
+
 function initSpectrogramFilter() {
   const canvas = document.getElementById('spectrogram-canvas');
   const freqSlider = document.getElementById('spec-freq-slider');
@@ -1677,18 +1480,30 @@ function initSpectrogramFilter() {
 
   if (!canvas || !freqSlider || !widthSlider) return;
 
+  // FIX: Set explicit canvas pixel dimensions
+  const containerWidth = canvas.parentElement ? canvas.parentElement.offsetWidth - 32 : 400;
+  canvas.width = Math.max(containerWidth, 300);
+  canvas.height = 150;
+
   const ctx = canvas.getContext('2d');
-  
+
+  if (specAnimFrame) { cancelAnimationFrame(specAnimFrame); specAnimFrame = null; }
+
   function draw() {
+    if (!document.getElementById('screen-16') || !document.getElementById('screen-16').classList.contains('active')) {
+      specAnimFrame = null;
+      return;
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     const freq = parseInt(freqSlider.value);
     const width = parseInt(widthSlider.value);
 
-    freqVal.textContent = freq + ' Hz';
-    widthVal.textContent = width + ' Hz';
+    if (freqVal) freqVal.textContent = freq + ' Hz';
+    if (widthVal) widthVal.textContent = width + ' Hz';
 
-    // Draw white noise waveform (simulated)
+    // White noise
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1699,18 +1514,15 @@ function initSpectrogramFilter() {
     }
     ctx.stroke();
 
-    // Draw target peak (420 Hz, located around x = 420px map)
     const targetFreq = 420;
     const isMatched = Math.abs(freq - targetFreq) <= 10 && width <= 30;
 
-    // Draw signal peak
+    // Signal peak
     ctx.beginPath();
     ctx.strokeStyle = isMatched ? 'rgba(0, 229, 160, 0.8)' : 'rgba(61, 158, 255, 0.3)';
     ctx.lineWidth = 2;
     for (let x = 0; x < canvas.width; x++) {
-      // Map x coordinate (0 to width) to frequency (100 to 800)
       const f = 100 + (x / canvas.width) * 700;
-      // Normal distribution around targetFreq
       const dist = Math.abs(f - targetFreq);
       const peakHeight = Math.exp(-Math.pow(dist / 15, 2)) * 80;
       const noise = (Math.random() - 0.5) * 5;
@@ -1720,13 +1532,12 @@ function initSpectrogramFilter() {
     }
     ctx.stroke();
 
-    // Draw Bandpass filter window (shaded rectangle)
+    // Filter window
     const startX = ((freq - width/2 - 100) / 700) * canvas.width;
     const endX = ((freq + width/2 - 100) / 700) * canvas.width;
     ctx.fillStyle = isMatched ? 'rgba(0, 229, 160, 0.08)' : 'rgba(61, 158, 255, 0.05)';
     ctx.fillRect(startX, 0, endX - startX, canvas.height);
-    
-    // Draw filter edges
+
     ctx.strokeStyle = isMatched ? 'rgba(0, 229, 160, 0.4)' : 'rgba(61, 158, 255, 0.2)';
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
@@ -1736,33 +1547,36 @@ function initSpectrogramFilter() {
     ctx.setLineDash([]);
 
     if (isMatched) {
-      statusBox.innerHTML = '<span class="clue-tag" style="color:var(--green)">› FILTER LOCKED</span><br/>Peak isolated at 420 Hz. Decrypted payload: <strong class="hl">"infinite"</strong>';
-      statusBox.className = 'clue-block locked-signal';
+      if (statusBox) {
+        statusBox.innerHTML = '<span class="clue-tag" style="color:var(--green)">› FILTER LOCKED</span><br/>Peak isolated at 420 Hz. Decrypted payload: <strong class="hl">"infinite"</strong>';
+        statusBox.className = 'clue-block locked-signal';
+      }
     } else {
-      statusBox.innerHTML = '<span class="clue-tag">› FILTER STATUS</span><br/>SIGNAL IS UNSTABLE. ADJUST FILTER PARAMETERS.';
-      statusBox.className = 'clue-block';
+      if (statusBox) {
+        statusBox.innerHTML = '<span class="clue-tag">› FILTER STATUS</span><br/>SIGNAL IS UNSTABLE. ADJUST FILTER PARAMETERS.';
+        statusBox.className = 'clue-block';
+      }
     }
 
-    requestAnimationFrame(draw);
+    specAnimFrame = requestAnimationFrame(draw);
   }
 
-  freqSlider.addEventListener('input', draw);
-  widthSlider.addEventListener('input', draw);
-  draw();
+  freqSlider.addEventListener('input', () => {});
+  widthSlider.addEventListener('input', () => {});
+  specAnimFrame = requestAnimationFrame(draw);
 }
 
-/* ══════════════════════════════════════════
 /* ══════════════════════════════════════════
    MODULE 17 — CIPHER DIAL LOCK
    ══════════════════════════════════════════ */
 const dialLetters = [
-  ['X', 'M', 'C', 'P', 'Y', 'B'],   // target: C (index 2)
-  ['Q', 'F', 'T', 'H', 'R', 'N'],   // target: H (index 3)
-  ['D', 'E', 'A', 'S', 'U', 'N'],   // target: E (index 1)
-  ['K', 'G', 'Z', 'V', 'R', 'I'],   // target: R (index 4)  -- wait, R is at index 4? no: K G Z V R I -> R=4 ✓
-  ['W', 'N', 'L', 'T', 'I', 'D'],   // target: I (index 4)
-  ['A', 'O', 'Y', 'F', 'S', 'Q'],   // target: S (index 4)
-  ['V', 'Z', 'M', 'B', 'K', 'H']    // target: H (index 5)
+  ['X', 'M', 'C', 'P', 'Y', 'B'],
+  ['Q', 'F', 'T', 'H', 'R', 'N'],
+  ['D', 'E', 'A', 'S', 'U', 'N'],
+  ['K', 'G', 'Z', 'V', 'R', 'I'],
+  ['W', 'N', 'L', 'T', 'I', 'D'],
+  ['A', 'O', 'Y', 'F', 'S', 'Q'],
+  ['V', 'Z', 'M', 'B', 'K', 'H']
 ];
 let dialIndices = [0, 0, 0, 0, 0, 0, 0];
 
@@ -1797,13 +1611,11 @@ function initWordLock() {
     dial.appendChild(letter);
     dial.appendChild(counter);
 
-    // Left-click: advance forward
     dial.addEventListener('click', (e) => {
       e.preventDefault();
       stepDial(col, 1);
     });
 
-    // Right-click: go backward
     dial.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       stepDial(col, -1);
@@ -1826,7 +1638,6 @@ function stepDial(col, dir) {
   if (letterEl) letterEl.textContent = dialLetters[col][dialIndices[col]];
   if (counterEl) counterEl.textContent = (dialIndices[col] + 1) + ' / ' + dialLetters[col].length;
 
-  // Flash animation
   if (dialEl) {
     dialEl.classList.add('dial-flash');
     setTimeout(() => dialEl.classList.remove('dial-flash'), 180);
@@ -1894,7 +1705,7 @@ function updateSumCheckUI() {
 
   const totalVal = document.getElementById('sc-total-val');
   const statusBox = document.getElementById('sumcheck-status-box');
-  
+
   if (totalVal) {
     totalVal.textContent = sum + ' / 244';
     if (sum === 244) {
@@ -1929,7 +1740,7 @@ const serverLogPool = [
   '10.105.2.18 - - [12/Jun/2026:14:13:01] "POST /login HTTP/1.1" 401 240 "user=root&pass=root"',
   '10.105.2.18 - - [12/Jun/2026:14:13:20] "POST /login HTTP/1.1" 403 125 "user=admin&pass=guest"',
   '172.16.5.99 - - [12/Jun/2026:14:14:02] "GET /items?cat=1 HTTP/1.1" 200 320',
-  "172.16.5.99 - - [12/Jun/2026:14:14:15] \"GET /items?cat=1' HTTP/1.1\" 500 1485 \"SQL syntax error near ''' at line 1\"",
+  "172.16.5.99 - - [12/Jun/2026:14:14:15] \"GET /items?cat=1' HTTP/1.1\" 500 1485 \"SQL syntax error near '\\'' at line 1\"",
   "172.16.5.99 - - [12/Jun/2026:14:15:00] \"GET /items?cat=1' UNION SELECT null,null -- HTTP/1.1\" 200 320",
   "172.16.5.99 - - [12/Jun/2026:14:15:25] \"GET /items?cat=1' UNION SELECT username,password FROM users -- HTTP/1.1\" 200 8420",
   "172.16.5.99 - - [12/Jun/2026:14:16:10] \"GET /items?cat=1' UNION SELECT flag,secret FROM secrets -- HTTP/1.1\" 200 5200",
@@ -1945,7 +1756,7 @@ function initLogAuditing() {
   const searchInput = document.getElementById('log-search-input');
   const ipInput = document.getElementById('attacker-ip-input');
   const decryptStatus = document.getElementById('forensics-status-box');
-  
+
   if (searchInput) searchInput.value = '';
   if (ipInput) ipInput.value = '';
   if (decryptStatus) {
@@ -1968,18 +1779,17 @@ function filterForensicLogs() {
     if (!query || line.toLowerCase().includes(query)) {
       const div = document.createElement('div');
       div.className = 'log-line';
-      
-      // Syntax highlighting for logs
+
       if (line.includes(' 200 ')) {
         if (line.includes('UNION') || line.includes('SELECT')) {
-          div.className += ' hl-success'; // Intrusion exfil success
+          div.className += ' hl-success';
         }
       } else if (line.includes(' 500 ')) {
         div.className += ' hl-danger';
       } else if (line.includes(' 401 ') || line.includes(' 403 ')) {
         div.className += ' hl-warn';
       }
-      
+
       div.textContent = line;
       terminal.appendChild(div);
     }
@@ -1989,14 +1799,14 @@ function filterForensicLogs() {
 function decryptLogPayload() {
   const ipInput = document.getElementById('attacker-ip-input');
   const statusBox = document.getElementById('forensics-status-box');
-  
+
   if (!ipInput || !statusBox) return;
 
   const val = ipInput.value.trim();
   if (val === '172.16.5.99') {
     statusBox.textContent = 'DECRYPTING CORE DUMP PACKET...';
     statusBox.className = 'forensics-decrypt-status success';
-    
+
     setTimeout(() => {
       statusBox.innerHTML = 'CORRELATION KEY VALIDATED! PAYLOAD RESOLVED: <strong class="hl">"memories"</strong>';
     }, 1200);
@@ -2006,8 +1816,285 @@ function decryptLogPayload() {
   }
 }
 
+/* ══════════════════════════════════════════
+   MODULE 20 — OVERRIDE KEY RING
+   ══════════════════════════════════════════ */
+const keyringCorrectOrder = ['K4Z', 'P4R', 'H1B', '4EV', 'T0G', 'H0M', 'YRS', 'UNV', 'SYM', 'PRM', 'JNY', 'DST', 'ETN', 'PAT', 'DEV', 'INF', 'CHS', 'BLV', 'MEM'];
+let keyringCurrentSlots = Array(19).fill(null);
+
+function initKeyring() {
+  keyringCurrentSlots = Array(19).fill(null);
+
+  const container = document.getElementById('keyring-frags-container');
+  const resetBtn = document.getElementById('btn-keyring-reset');
+  const submitBtn = document.getElementById('btn-keyring-submit');
+  const fb = document.getElementById('feedback-20');
+
+  if (!container || !resetBtn || !submitBtn || !fb) return;
+
+  fb.classList.add('hidden');
+  submitBtn.disabled = true;
+
+  const frags = [...keyringCorrectOrder].sort(() => Math.random() - 0.5);
+
+  container.innerHTML = '';
+  frags.forEach(val => {
+    const btn = document.createElement('button');
+    btn.className = 'key-frag-btn';
+    btn.textContent = val;
+    btn.setAttribute('data-val', val);
+
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('selected')) return;
+
+      const nextEmpty = keyringCurrentSlots.indexOf(null);
+      if (nextEmpty !== -1) {
+        keyringCurrentSlots[nextEmpty] = val;
+        btn.classList.add('selected');
+        btn.disabled = true;
+        updateKeyringUI();
+      }
+    });
+
+    container.appendChild(btn);
+  });
+
+  document.querySelectorAll('.keyring-slot').forEach(slot => {
+    const newSlot = slot.cloneNode(true);
+    slot.parentNode.replaceChild(newSlot, slot);
+  });
+
+  document.querySelectorAll('.keyring-slot').forEach(slot => {
+    slot.addEventListener('click', () => {
+      const idx = parseInt(slot.getAttribute('data-index'));
+      const val = keyringCurrentSlots[idx];
+      if (val !== null) {
+        keyringCurrentSlots[idx] = null;
+
+        const btn = container.querySelector(`.key-frag-btn[data-val="${val}"]`);
+        if (btn) {
+          btn.classList.remove('selected');
+          btn.disabled = false;
+        }
+
+        updateKeyringUI();
+      }
+    });
+  });
+
+  const newResetBtn = resetBtn.cloneNode(true);
+  resetBtn.parentNode.replaceChild(newResetBtn, resetBtn);
+  document.getElementById('btn-keyring-reset').addEventListener('click', () => {
+    keyringCurrentSlots.fill(null);
+    container.querySelectorAll('.key-frag-btn').forEach(btn => {
+      btn.classList.remove('selected');
+      btn.disabled = false;
+    });
+    updateKeyringUI();
+    fb.classList.add('hidden');
+  });
+
+  const newSubmitBtn = submitBtn.cloneNode(true);
+  submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+  document.getElementById('btn-keyring-submit').onclick = () => {
+    const isCorrect = keyringCurrentSlots.every((val, idx) => val === keyringCorrectOrder[idx]);
+    if (isCorrect) {
+      fb.classList.remove('hidden', 'error');
+      fb.classList.add('success');
+      fb.textContent = '› OVERRIDE CONFIRMED. DECRYPTION KEY RING SECURED. LOADING TRANSMISSION DECK...';
+
+      setTimeout(() => {
+        goTo('screen-final');
+      }, 1600);
+    } else {
+      fb.classList.remove('hidden', 'success');
+      fb.classList.add('error');
+      fb.textContent = '› INTEGRITY CHECK FAILED: SEQUENCE OUT OF CHRONOLOGICAL ORDER. RE-ARRANGE.';
+    }
+  };
+
+  updateKeyringUI();
+}
+
+function updateKeyringUI() {
+  const submitBtn = document.getElementById('btn-keyring-submit');
+
+  keyringCurrentSlots.forEach((val, idx) => {
+    const slot = document.querySelector(`.keyring-slot[data-index="${idx}"]`);
+    const valEl = slot ? slot.querySelector('.slot-val') : null;
+
+    if (slot && valEl) {
+      if (val !== null) {
+        valEl.textContent = val;
+        slot.classList.add('filled');
+      } else {
+        valEl.textContent = '???';
+        slot.classList.remove('filled');
+      }
+    }
+  });
+
+  const isFilled = !keyringCurrentSlots.includes(null);
+  if (submitBtn) submitBtn.disabled = !isFilled;
+}
+
+
+/* ══════════════════════════════════════════
+   FINAL SCREEN & DECORATIONS
+   ══════════════════════════════════════════ */
+function initFinalScreen() {
+  initRain();
+  buildFinalKeys();
+}
+
+function buildFinalKeys() {
+  const row = document.getElementById('final-keys-display');
+  if (!row) return;
+  row.innerHTML = '';
+  Object.entries(KEY_FRAGMENTS).forEach(([stage, val]) => {
+    const span = document.createElement('span');
+    span.className = 'fk';
+    const prefix = parseInt(stage) < 10 ? 'MOD-0' : 'MOD-';
+    span.textContent = `${prefix}${stage}: ${val}`;
+    span.style.animationDelay = (parseInt(stage) * 0.1) + 's';
+    row.appendChild(span);
+  });
+}
+
+function initMatrix() {
+  const canvas = document.getElementById('matrixCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
+  const fontSize = 13;
+  const cols = Math.floor(canvas.width / fontSize);
+  const drops = Array(cols).fill(1);
+
+  function draw() {
+    ctx.fillStyle = 'rgba(10, 12, 16, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00e5a0';
+    ctx.font = fontSize + 'px JetBrains Mono, monospace';
+    drops.forEach((y, i) => {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(char, i * fontSize, y * fontSize);
+      if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    });
+  }
+
+  setInterval(draw, 60);
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+}
+
+function initRain() {
+  const container = document.getElementById('finalRain');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const chars = ['0','1','L','O','V','E','H','I','B','A','♥','◆','▲','✦'];
+  for (let i = 40; i > 0; i--) {
+    const drop = document.createElement('div');
+    drop.className = 'rain-drop';
+    drop.textContent = chars[Math.floor(Math.random() * chars.length)];
+    drop.style.left = Math.random() * 100 + 'vw';
+    drop.style.animationDuration = (4 + Math.random() * 8) + 's';
+    drop.style.animationDelay = (Math.random() * 8) + 's';
+    drop.style.opacity = (0.1 + Math.random() * 0.4).toString();
+    container.appendChild(drop);
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   MODULE 09 — GRAPHIC EQUALIZER WIDGET
+   ══════════════════════════════════════════ */
+const eqTargets = [70, 30, 50, 80, 40];
+
+function initEqualizer() {
+  const sliders = document.querySelectorAll('.eq-slider');
+  sliders.forEach(slider => {
+    // Replace to remove stale listeners
+    const newSlider = slider.cloneNode(true);
+    slider.parentNode.replaceChild(newSlider, slider);
+  });
+
+  document.querySelectorAll('.eq-slider').forEach(slider => {
+    const idx = parseInt(slider.getAttribute('data-idx'));
+    const val = parseInt(slider.value);
+    const valTxt = document.getElementById('eq-val-' + idx);
+    const target = eqTargets[idx];
+    const targetMarker = document.getElementById('eq-tgt-' + idx);
+
+    if (valTxt) {
+      valTxt.textContent = val + '%';
+      if (Math.abs(val - target) <= 5) valTxt.classList.add('match');
+      else valTxt.classList.remove('match');
+    }
+    if (targetMarker) {
+      if (Math.abs(val - target) <= 5) targetMarker.classList.add('locked');
+      else targetMarker.classList.remove('locked');
+    }
+
+    slider.oninput = () => {
+      const v = parseInt(slider.value);
+      const vTxt = document.getElementById('eq-val-' + idx);
+      if (vTxt) vTxt.textContent = v + '%';
+      const tMark = document.getElementById('eq-tgt-' + idx);
+      if (Math.abs(v - target) <= 5) {
+        if (vTxt) vTxt.classList.add('match');
+        if (tMark) tMark.classList.add('locked');
+      } else {
+        if (vTxt) vTxt.classList.remove('match');
+        if (tMark) tMark.classList.remove('locked');
+      }
+      checkEqualizerSync();
+    };
+  });
+  checkEqualizerSync();
+}
+
+function checkEqualizerSync() {
+  const sliders = document.querySelectorAll('.eq-slider');
+  let allMatched = true;
+  sliders.forEach(slider => {
+    const idx = parseInt(slider.getAttribute('data-idx'));
+    const val = parseInt(slider.value);
+    if (Math.abs(val - eqTargets[idx]) > 5) {
+      allMatched = false;
+    }
+  });
+
+  const statusBox = document.getElementById('eq-status-box');
+  if (statusBox) {
+    if (allMatched) {
+      statusBox.innerHTML = '<span class="clue-tag" style="color:var(--green)">› SIGNAL SECURED</span><br/>Harmonic resonance secured. Decrypted payload: <strong class="hl">"symphony"</strong>';
+    } else {
+      statusBox.innerHTML = '<span class="clue-tag">› SYSTEM STATUS</span><br/>Adjust faders until all channels say "LOCKED" (within 5% of their targets).';
+    }
+  }
+}
+
+
+// ── Reset progress ──
 function resetProgress() {
   if (confirm("Are you sure you want to reset all progress? This cannot be undone.")) {
+    // Stop all running processes first
+    if (waveAnimFrame) { cancelAnimationFrame(waveAnimFrame); waveAnimFrame = null; }
+    if (specAnimFrame) { cancelAnimationFrame(specAnimFrame); specAnimFrame = null; }
+    if (radioStaticInterval) { clearInterval(radioStaticInterval); radioStaticInterval = null; }
+    if (matrixDecodeInterval) { clearInterval(matrixDecodeInterval); matrixDecodeInterval = null; }
+    if (morseTimer) { clearTimeout(morseTimer); morseTimer = null; }
+    morsePlaying = false;
+    stopMorseBeep();
+
     localStorage.removeItem('op_hiba_cleared_stages');
     localStorage.removeItem('op_hiba_active_screen');
     window.location.reload();
