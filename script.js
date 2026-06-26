@@ -66,6 +66,10 @@ const STAGE_ORDER = [
 // ── Navigate ──
 function goTo(screenId) {
   localStorage.setItem('op_hiba_active_screen', screenId);
+  
+  // Custom melody stop on navigating away from final screen
+  stopFinalMelody();
+
   // Clean up running intervals / frames
   if (waveAnimFrame) {
     cancelAnimationFrame(waveAnimFrame);
@@ -104,9 +108,11 @@ function goTo(screenId) {
 
   // Use requestAnimationFrame to ensure the element is laid out before initializing canvases
   requestAnimationFrame(() => {
+    if (screenId === 'screen-1') initRadarM1();
+    if (screenId === 'screen-2') initCctvM2();
     if (screenId === 'screen-3') initRadioTuner();
     if (screenId === 'screen-4') initCaesarSlider();
-    if (screenId === 'screen-5') resetPatternLock();
+    if (screenId === 'screen-5') resetKeypad();
     if (screenId === 'screen-6') initWaveform();
     if (screenId === 'screen-7') initBase64Matrix();
     if (screenId === 'screen-8') initStarMapper();
@@ -122,7 +128,10 @@ function goTo(screenId) {
     if (screenId === 'screen-18') initSumCheck();
     if (screenId === 'screen-19') initLogAuditing();
     if (screenId === 'screen-20') initKeyring();
-    if (screenId === 'screen-final') initFinalScreen();
+    if (screenId === 'screen-final') {
+      initFinalScreen();
+      startFinalMelody();
+    }
   });
 }
 
@@ -149,7 +158,7 @@ function check(stage) {
       2: '> location mismatch. re-examine the street name and the transport system. both point to one city.',
       3: '> identity alias mismatch. tune the radio dial to 104.7 MHz to decrypt the correct name.',
       4: '> decryption error. slide to offset -7 to decode Signal B to find the timeline.',
-      5: '> incorrect. read the WhatsApp chat thread. the answer is the final word sent — nothing else.',
+      5: '> incorrect pin sequence. access denied. re-examine the smudged keys.',
       6: '> alignment error. synchronize the waveform sliders to 100% to decrypt the keyword.',
       7: '> payload mismatch. run the decryption engine, copy the output, and type it exactly.',
       8: '> constellation signature mismatch. connect stars 1 to 5 to 1 in order to reveal the word.',
@@ -171,6 +180,16 @@ function check(stage) {
 
 // ── Success ──
 function showSuccess(stage) {
+  playSuccessSound();
+
+  // Highlight active window with green pulse
+  const activeWin = document.querySelector('.screen.active .terminal-window');
+  if (activeWin) {
+    activeWin.classList.remove('success-pulse');
+    void activeWin.offsetWidth; // trigger reflow
+    activeWin.classList.add('success-pulse');
+  }
+
   if (!clearedStages.includes(stage)) {
     clearedStages.push(stage);
     localStorage.setItem('op_hiba_cleared_stages', JSON.stringify(clearedStages));
@@ -200,6 +219,17 @@ function showSuccess(stage) {
 
 // ── Error ──
 function showError(stage, msg) {
+  playErrorSound();
+
+  // Shake terminal window on error
+  const activeWin = document.querySelector('.screen.active .terminal-window');
+  if (activeWin) {
+    activeWin.classList.remove('shake-anim');
+    void activeWin.offsetWidth; // trigger reflow
+    activeWin.classList.add('shake-anim');
+    setTimeout(() => activeWin.classList.remove('shake-anim'), 500);
+  }
+
   const fb = document.getElementById('feedback-' + stage);
   if (fb) {
     fb.classList.remove('hidden', 'success');
@@ -318,285 +348,46 @@ function initCaesarSlider() {
 
 
 /* ══════════════════════════════════════════
-   MODULE 05 — PATTERN LOCK SCREEN
+   MODULE 05 — KEYPAD BYPASS WIDGET
    ══════════════════════════════════════════ */
-let activeNode = null;
-let drawnSegments = [];
-let currentMousePos = null;
+let keypadInput = "";
+const TARGET_PIN = "1379";
 
-function getNodeCenter(idx) {
-  const row = Math.floor(idx / 3);
-  const col = idx % 3;
-  return {
-    x: 40 + col * 80,
-    y: 40 + row * 80
-  };
-}
-
-function redrawPatternCanvas() {
-  const canvas = document.getElementById('pattern-canvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  ctx.strokeStyle = '#00e5a0';
-  ctx.lineWidth = 5;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-
-  drawnSegments.forEach(seg => {
-    const [a, b] = seg.split('-').map(Number);
-    const posA = getNodeCenter(a);
-    const posB = getNodeCenter(b);
-    ctx.beginPath();
-    ctx.moveTo(posA.x, posA.y);
-    ctx.lineTo(posB.x, posB.y);
-    ctx.stroke();
-  });
-
-  // Draw current line to finger/cursor
-  if (activeNode !== null && currentMousePos) {
-    const posA = getNodeCenter(activeNode);
-    ctx.strokeStyle = 'rgba(0, 229, 160, 0.4)';
-    ctx.beginPath();
-    ctx.moveTo(posA.x, posA.y);
-    ctx.lineTo(currentMousePos.x, currentMousePos.y);
-    ctx.stroke();
+function keypadPress(num) {
+  if (keypadInput.length < 4) {
+    keypadInput += num;
+    updateKeypadDisplay();
   }
 }
 
-function resetPatternLock() {
-  activeNode = null;
-  drawnSegments = [];
-  currentMousePos = null;
+function keypadClear() {
+  keypadInput = "";
+  updateKeypadDisplay();
+}
 
-  document.querySelectorAll('.pattern-node').forEach(node => {
-    node.classList.remove('active', 'error');
-  });
+function updateKeypadDisplay() {
+  const display = document.getElementById("keypad-display");
+  if (!display) return;
+  display.textContent = keypadInput.padEnd(4, "-");
+}
 
-  const canvas = document.getElementById('pattern-canvas');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function keypadSubmit() {
+  if (keypadInput === TARGET_PIN) {
+    showSuccess(5);
+  } else {
+    showError(5, '> incorrect pin sequence. access denied.');
+    keypadClear();
   }
+}
 
-  const lockWrapper = document.getElementById('m5-lock-wrapper');
-  const chatWrapper = document.getElementById('m5-chat-wrapper');
-  const title = document.getElementById('m5-title');
-  if (lockWrapper) lockWrapper.classList.remove('hidden');
-  if (chatWrapper) chatWrapper.classList.add('hidden');
-  if (title) title.textContent = "Unlock Chat Logs";
+function resetKeypad() {
+  keypadInput = "";
+  updateKeypadDisplay();
 
   const fb = document.getElementById('feedback-5');
   if (fb) fb.classList.add('hidden');
 }
 
-function handlePatternMove(clientX, clientY) {
-  if (activeNode === null) return;
-  const canvas = document.getElementById('pattern-canvas');
-  if (!canvas) return;
-
-  const rect = canvas.getBoundingClientRect();
-  currentMousePos = {
-    x: clientX - rect.left,
-    y: clientY - rect.top
-  };
-
-  const el = document.elementFromPoint(clientX, clientY);
-  if (!el) {
-    redrawPatternCanvas();
-    return;
-  }
-  const nodeEl = el.closest('.pattern-node');
-  if (!nodeEl) {
-    redrawPatternCanvas();
-    return;
-  }
-  const j = parseInt(nodeEl.getAttribute('data-index'));
-  if (j === activeNode) {
-    redrawPatternCanvas();
-    return;
-  }
-
-  // Try connecting activeNode -> j
-  const segment = Math.min(activeNode, j) + '-' + Math.max(activeNode, j);
-  const validSegments = ["0-3", "3-6", "3-4", "4-5", "2-5", "5-8"];
-
-  if (validSegments.includes(segment)) {
-    if (!drawnSegments.includes(segment)) {
-      drawnSegments.push(segment);
-    }
-    const nodeA = document.querySelector(`.pattern-node[data-index="${activeNode}"]`);
-    const nodeB = document.querySelector(`.pattern-node[data-index="${j}"]`);
-    if (nodeA) nodeA.classList.add('active');
-    if (nodeB) nodeB.classList.add('active');
-    activeNode = j;
-
-    // Check win condition
-    if (drawnSegments.length === 6) {
-      activeNode = null;
-      currentMousePos = null;
-      triggerPatternSuccess();
-    }
-  } else {
-    // If they connect something invalid, clear and trigger error
-    activeNode = null;
-    currentMousePos = null;
-    triggerPatternError();
-  }
-  redrawPatternCanvas();
-}
-
-function triggerPatternSuccess() {
-  document.querySelectorAll('.pattern-node').forEach(node => node.classList.add('active'));
-  setTimeout(() => {
-    unlockChatLogs();
-  }, 500);
-}
-
-function triggerPatternError() {
-  document.querySelectorAll('.pattern-node.active').forEach(node => {
-    node.classList.remove('active');
-    node.classList.add('error');
-  });
-
-  const canvas = document.getElementById('pattern-canvas');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#ff4d4d';
-    redrawPatternCanvas();
-  }
-
-  setTimeout(() => {
-    resetPatternLock();
-  }, 800);
-}
-
-function unlockChatLogs() {
-  const lockWrapper = document.getElementById('m5-lock-wrapper');
-  const chatWrapper = document.getElementById('m5-chat-wrapper');
-  const title = document.getElementById('m5-title');
-  if (lockWrapper) lockWrapper.classList.add('hidden');
-  if (chatWrapper) chatWrapper.classList.remove('hidden');
-  if (title) title.textContent = "MODULE 05 / 20 — COMMUNICATION INTERCEPT";
-
-  loadWhatsAppThread();
-}
-
-const chatMessages = [
-  { sender: 'them', text: 'still awake?', time: '00:11' },
-  { sender: 'me', text: 'always.', time: '00:13' },
-  { sender: 'them', text: 'I was thinking about something you said last week', time: '00:14' },
-  { sender: 'me', text: 'which part', time: '00:15' },
-  { sender: 'them', text: 'the part where you said distance doesn\'t change how you feel', time: '00:16' },
-  { sender: 'them', text: 'do you actually believe that or do you just say it', time: '00:16' },
-  { sender: 'me', text: 'I believe it.', time: '00:18' },
-  { sender: 'them', text: 'even on the bad days', time: '00:19' },
-  { sender: 'me', text: 'especially on the bad days. that\'s when I\'m most sure.', time: '00:21' },
-  { sender: 'them', text: 'I don\'t know how you do that', time: '00:22' },
-  { sender: 'me', text: 'do what', time: '00:23' },
-  { sender: 'them', text: 'stay so certain about everything', time: '00:23' },
-  { sender: 'me', text: 'I\'m not certain about everything.<br/>just about this.', time: '00:25' },
-  { sender: 'them', text: 'what if things change', time: '00:27' },
-  { sender: 'me', text: 'things change. people change. I know.<br/>this doesn\'t.', time: '00:29' },
-  { sender: 'them', text: 'you sound very sure of that', time: '00:30' },
-  { sender: 'me', text: 'I am.', time: '00:31' },
-  { sender: 'them', text: 'will you still feel this way next year', time: '00:33' },
-  { sender: 'me', text: 'and the year after that.', time: '00:34' },
-  { sender: 'them', text: 'promise?', time: '00:35' },
-  { sender: 'me', text: 'you don\'t need a promise.<br/>you already know.', time: '00:36' },
-  { sender: 'them', text: 'still. say it.', time: '00:37' },
-  { sender: 'me', text: '[DECRYPTING...] together. ✓✓', time: '00:38' }
-];
-
-function loadWhatsAppThread() {
-  const container = document.getElementById('chat-thread-container');
-  if (!container) return;
-
-  const header = container.querySelector('.chat-label');
-  container.innerHTML = '';
-  if (header) container.appendChild(header);
-
-  let idx = 0;
-  function addNextMsg() {
-    if (idx >= chatMessages.length) return;
-    const msg = chatMessages[idx];
-
-    const wrapper = document.createElement('div');
-    wrapper.className = `chat-msg ${msg.sender}`;
-
-    const bubble = document.createElement('div');
-    bubble.className = `chat-bubble ${msg.sender}-bubble`;
-    bubble.innerHTML = msg.text;
-
-    const meta = document.createElement('div');
-    meta.className = 'chat-meta';
-    meta.textContent = msg.time;
-
-    wrapper.appendChild(bubble);
-    wrapper.appendChild(meta);
-    container.appendChild(wrapper);
-
-    container.scrollTop = container.scrollHeight;
-
-    idx++;
-    setTimeout(addNextMsg, idx === chatMessages.length - 1 ? 1400 : 700);
-  }
-
-  setTimeout(addNextMsg, 400);
-}
-
-// Bind pattern lock events
-window.addEventListener('DOMContentLoaded', () => {
-  const nodes = document.querySelectorAll('.pattern-node');
-  nodes.forEach(node => {
-    const onStart = (e) => {
-      const activeScreen = document.querySelector('.screen.active');
-      if (!activeScreen || activeScreen.id !== 'screen-5') return;
-
-      e.preventDefault();
-      activeNode = parseInt(node.getAttribute('data-index'));
-      node.classList.add('active');
-      const touch = e.touches ? e.touches[0] : e;
-      const canvas = document.getElementById('pattern-canvas');
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      currentMousePos = {
-        x: touch.clientX - rect.left,
-        y: touch.clientY - rect.top
-      };
-      redrawPatternCanvas();
-    };
-
-    node.addEventListener('mousedown', onStart);
-    node.addEventListener('touchstart', onStart, { passive: false });
-  });
-
-  window.addEventListener('mousemove', (e) => {
-    if (activeNode !== null) handlePatternMove(e.clientX, e.clientY);
-  });
-  window.addEventListener('touchmove', (e) => {
-    if (activeNode !== null) {
-      e.preventDefault();
-      handlePatternMove(e.touches[0].clientX, e.touches[0].clientY);
-    }
-  }, { passive: false });
-
-  window.addEventListener('mouseup', () => {
-    if (activeNode !== null) {
-      activeNode = null;
-      currentMousePos = null;
-      redrawPatternCanvas();
-    }
-  });
-  window.addEventListener('touchend', () => {
-    if (activeNode !== null) {
-      activeNode = null;
-      currentMousePos = null;
-      redrawPatternCanvas();
-    }
-  });
-});
 
 
 /* ══════════════════════════════════════════
@@ -1418,14 +1209,21 @@ function updateGateNodeUI(gateId, val) {
    MODULE 15 — VIGENERE DECRYPTION DECK
    ══════════════════════════════════════════ */
 function initVigenere() {
-  const keyInput = document.getElementById('vig-key-input');
-  if (!keyInput) return;
-  keyInput.value = '';
-
   const ciphertext = "OSQSEWJR";
 
+  // Clone element first to strip stale listeners
+  const oldInput = document.getElementById('vig-key-input');
+  if (!oldInput) return;
+  const cloned = oldInput.cloneNode(true);
+  oldInput.parentNode.replaceChild(cloned, oldInput);
+
+  // IMPORTANT: get the fresh reference BEFORE defining the handler closure,
+  // so the closure captures this variable, not the now-detached old one.
+  const freshInput = document.getElementById('vig-key-input');
+  freshInput.value = '';
+
   function updateVigenere() {
-    const key = keyInput.value.toLowerCase().replace(/[^a-z]/g, '');
+    const key = freshInput.value.toLowerCase().replace(/[^a-z]/g, '');
 
     for (let i = 0; i < ciphertext.length; i++) {
       const cChar = ciphertext[i];
@@ -1453,13 +1251,15 @@ function initVigenere() {
         }
       }
     }
+
+    // Auto-fill and submit when the correct key is typed
+    if (key === 'love') {
+      const answerInput = document.getElementById('input-15');
+      if (answerInput) answerInput.value = 'devotion';
+      setTimeout(() => showSuccess(15), 900);
+    }
   }
 
-  // Replace to remove stale listeners
-  const newInput = keyInput.cloneNode(true);
-  keyInput.parentNode.replaceChild(newInput, keyInput);
-  const freshInput = document.getElementById('vig-key-input');
-  freshInput.value = '';
   freshInput.addEventListener('input', updateVigenere);
   updateVigenere();
 }
@@ -2105,12 +1905,16 @@ function resetProgress() {
 // ── Enter key submit ──
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Enter') return;
+  // Ignore enter key if user is typing in CLI console or Vigenère key input
+  if (e.target && (e.target.id === 'cli-input' || e.target.id === 'vig-key-input')) return;
+  
   const active = document.querySelector('.screen.active');
   if (!active) return;
   const match = active.id.match(/screen-(\d+)/);
   if (match) {
     const stage = parseInt(match[1]);
-    if (stage >= 1 && stage <= 19) check(stage);
+    // Skip manual text checking on Module 1 and 2 (interactive radar/forensics)
+    if (stage > 2 && stage <= 19) check(stage);
   }
 });
 
@@ -2150,3 +1954,450 @@ window.addEventListener('DOMContentLoaded', () => {
     goTo('screen-boot');
   }
 });
+
+/* ══════════════════════════════════════════
+   UPGRADE FEATURES: SOUNDS, CLI, RADAR, FORENSICS
+   ══════════════════════════════════════════ */
+
+// ── Audio Engine (Web Audio API) ──
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playSuccessSound() {
+  try {
+    initAudio();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'triangle';
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.frequency.setValueAtTime(523.25, now); // C5
+    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+    osc.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+    
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+    gain.gain.setValueAtTime(0.15, now + 0.35);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+    
+    osc.start(now);
+    osc.stop(now + 0.7);
+  } catch (e) {
+    console.log("Audio Error:", e);
+  }
+}
+
+function playErrorSound() {
+  try {
+    initAudio();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    osc.type = 'sawtooth';
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.frequency.setValueAtTime(120, now);
+    osc.frequency.linearRampToValueAtTime(90, now + 0.25);
+    
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(0.2, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    
+    osc.start(now);
+    osc.stop(now + 0.3);
+  } catch (e) {
+    console.log("Audio Error:", e);
+  }
+}
+
+let finalMelodyInterval = null;
+let melodyActive = false;
+
+function startFinalMelody() {
+  if (melodyActive) return;
+  melodyActive = true;
+  try {
+    initAudio();
+    let index = 0;
+    
+    // Ambient romantic synth tune loop
+    const melody = [
+      { f: 523.25, d: 0.4 }, { f: 587.33, d: 0.4 }, { f: 659.25, d: 0.4 }, { f: 783.99, d: 0.8 },
+      { f: 659.25, d: 0.4 }, { f: 783.99, d: 0.8 }, { f: 880.00, d: 0.8 }, { f: 783.99, d: 1.2 },
+      { f: 659.25, d: 0.4 }, { f: 587.33, d: 0.4 }, { f: 523.25, d: 0.8 }, { f: 440.00, d: 0.4 },
+      { f: 523.25, d: 1.2 }, { f: 440.00, d: 0.4 }, { f: 392.00, d: 1.2 }
+    ];
+    
+    function playNextNote() {
+      if (!melodyActive) return;
+      const note = melody[index];
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine';
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.frequency.setValueAtTime(note.f, now);
+      
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.06, now + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + note.d);
+      
+      osc.start(now);
+      osc.stop(now + note.d + 0.1);
+      
+      index = (index + 1) % melody.length;
+      finalMelodyInterval = setTimeout(playNextNote, note.d * 1000 + 100);
+    }
+    
+    playNextNote();
+  } catch (e) {
+    console.log("Audio Error:", e);
+  }
+}
+
+function stopFinalMelody() {
+  melodyActive = false;
+  if (finalMelodyInterval) {
+    clearTimeout(finalMelodyInterval);
+    finalMelodyInterval = null;
+  }
+}
+
+// ── Persistent CLI Command Line Interface ──
+function toggleCLI() {
+  const cli = document.getElementById('cli-console');
+  const btn = document.getElementById('cli-toggle-btn');
+  if (!cli || !btn) return;
+  initAudio(); // Resume audio context
+  
+  if (cli.classList.contains('minimized')) {
+    cli.classList.remove('minimized');
+    btn.textContent = '[ COLLAPSE SHELL ▼ ]';
+    document.getElementById('cli-input').focus();
+  } else {
+    cli.classList.add('minimized');
+    btn.textContent = '[ EXPAND SHELL ▲ ]';
+  }
+}
+
+function writeCliLog(text, type = '') {
+  const logs = document.getElementById('cli-logs');
+  if (!logs) return;
+  const line = document.createElement('div');
+  line.className = 'cli-log-line ' + type;
+  line.textContent = text;
+  logs.appendChild(line);
+  logs.scrollTop = logs.scrollHeight;
+}
+
+// CLI keydown listener
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('cli-input');
+  if (input) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const cmd = input.value.trim();
+        input.value = '';
+        if (cmd) executeCliCommand(cmd);
+      }
+    });
+  }
+});
+
+function executeCliCommand(cmdStr) {
+  writeCliLog('agent@op-hiba:~$ ' + cmdStr, 'cmd');
+  const tokens = cmdStr.toLowerCase().split(/\s+/);
+  const primary = tokens[0];
+  
+  switch(primary) {
+    case 'help':
+      writeCliLog('Available Commands:\n  help      - Show this log info\n  whoami    - Print decrypted agent dossier\n  clear     - Wipe command terminal history\n  scan      - Execute sector sweep on active page\n  bypass    - Force-advance to next module (dev override)');
+      break;
+    case 'clear':
+      const logs = document.getElementById('cli-logs');
+      if (logs) logs.innerHTML = '';
+      break;
+    case 'whoami':
+      const clearedCount = clearedStages.length;
+      const total = 20;
+      writeCliLog(`AGENT PROFILE:\n  Codename: Agent Hiba\n  Decryption Progress: ${clearedCount}/${total} modules resolved\n  Clearance Level: LEVEL MAX\n  Current Target: OPERATION_HIBA.enc\n  Status: Most Valuable Asset (Protected Status)`, 'res');
+      break;
+    case 'scan':
+      triggerFullscreenMatrixScan();
+      break;
+    case 'bypass':
+      const active = document.querySelector('.screen.active');
+      if (active) {
+        const match = active.id.match(/screen-(\d+)/);
+        if (match) {
+          const stage = parseInt(match[1]);
+          const hiddenInput = document.getElementById('input-' + stage);
+          if (hiddenInput) {
+            hiddenInput.value = ANSWERS[stage];
+            showSuccess(stage);
+            writeCliLog(`BYPASS SUCCESS: Module ${stage} status overridden.`, 'res');
+          } else {
+            writeCliLog('ERR: Unable to run bypass in current context.', 'err');
+          }
+        } else {
+          writeCliLog('ERR: No active module detected to bypass.', 'err');
+        }
+      }
+      break;
+    // Sweet Easter Eggs
+    case 'love':
+    case 'i-love-you':
+      writeCliLog('SYSTEM REPORT: Love parameters overflow... Value: INFINITE.\nHeart decryptor status: 100% capacity reserved for Agent Hiba.', 'res');
+      break;
+    case 'hiba':
+      writeCliLog('DOSSIER - AGENT HIBA: System integrity confirms she is the center of the universe.', 'res');
+      break;
+    case 'roses':
+    case 'rose':
+      writeCliLog('VALLEY OF ROSES SIGNAL ACQUIRED: Kazanlak decryption locked. Virtual bouquet sent: 🌹🌹🌹', 'res');
+      break;
+    case 'miss':
+    case 'distance':
+      writeCliLog('CONNECTING... Tracing physical coordinates. Warning: distance exceeds limits. Love bridge: OPERATIONAL.', 'res');
+      break;
+    default:
+      writeCliLog(`ERR: Command '${primary}' not found in mainframe catalog. Type 'help' for support.`, 'err');
+  }
+}
+
+function triggerFullscreenMatrixScan() {
+  const overlay = document.getElementById('matrix-scan-overlay');
+  if (!overlay) return;
+  initAudio();
+  playSuccessSound();
+  
+  overlay.classList.add('active');
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    writeCliLog('SCAN COMPLETE: Sector integrity verified. No anomalies detected.', 'res');
+  }, 2000);
+}
+
+
+// ── Module 1: Radar coordinate locking minigame ──
+let radarCanvas = null;
+let radarCtx = null;
+let radarLocked = false;
+
+function initRadarM1() {
+  radarCanvas = document.getElementById('radar-canvas-m1');
+  const targetDot = document.getElementById('radar-target-m1');
+  const crosshair = document.getElementById('radar-crosshair-m1');
+  const coordDisplay = document.getElementById('radar-coord-display-val');
+  const statusDisplay = document.getElementById('radar-status-m1');
+  const scanBtn = document.getElementById('btn-radar-scan-m1');
+  const hiddenInput = document.getElementById('input-1');
+  
+  if (!radarCanvas) return;
+  
+  radarCtx = radarCanvas.getContext('2d');
+  drawRadarGridLines();
+  
+  if (clearedStages.includes(1)) {
+    radarLocked = true;
+    hiddenInput.value = 'kazanlak';
+    scanBtn.disabled = false;
+    crosshair.style.left = '40%';
+    crosshair.style.top = '40%';
+    crosshair.style.display = 'block';
+    targetDot.style.left = '40%';
+    targetDot.style.top = '40%';
+    targetDot.style.display = 'block';
+    statusDisplay.textContent = 'LOCK ACQUIRED: KAZANLAK VALLEY (Resolved)';
+    statusDisplay.className = 'radar-status locked';
+    coordDisplay.textContent = '42.6000° N , 25.4000° E';
+  } else {
+    radarLocked = false;
+    hiddenInput.value = '';
+    scanBtn.disabled = true;
+    crosshair.style.display = 'none';
+    targetDot.style.display = 'none';
+    statusDisplay.textContent = 'CLICK ON THE RADAR SCOPE TO SECTOR-SCAN FOR THE CITY OF ROSES';
+    statusDisplay.className = 'radar-status';
+    coordDisplay.textContent = 'Scanning...';
+  }
+  
+  radarCanvas.addEventListener('click', (e) => {
+    if (radarLocked) return;
+    initAudio();
+    
+    const rect = radarCanvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    
+    const lat = (43.0 - y * 1.0).toFixed(4);
+    const lon = (25.0 + x * 1.0).toFixed(4);
+    
+    coordDisplay.textContent = `${lat}° N , ${lon}° E`;
+    
+    crosshair.style.left = (x * 100) + '%';
+    crosshair.style.top = (y * 100) + '%';
+    crosshair.style.display = 'block';
+    
+    // Kazanlak targets around y = 0.4, x = 0.4
+    const dist = Math.hypot(x - 0.4, y - 0.4);
+    
+    if (dist < 0.05) {
+      radarLocked = true;
+      targetDot.style.left = '40%';
+      targetDot.style.top = '40%';
+      targetDot.style.display = 'block';
+      
+      statusDisplay.textContent = 'LOCK ACQUIRED: KAZANLAK VALLEY (Valley of Roses)';
+      statusDisplay.className = 'radar-status locked';
+      scanBtn.disabled = false;
+      hiddenInput.value = 'kazanlak';
+      playSuccessSound();
+    } else if (dist < 0.2) {
+      statusDisplay.textContent = 'WARNING: STRONG THERMAL READOUT DETECTED NEAR THIS SECTOR';
+      statusDisplay.className = 'radar-status warm';
+      playErrorSound();
+    } else {
+      statusDisplay.textContent = 'COLD GRID: NO SIGNIFICANT BOTANICAL SIGNATURE DETECTED';
+      statusDisplay.className = 'radar-status';
+      playErrorSound();
+    }
+  });
+  
+  scanBtn.onclick = () => {
+    if (hiddenInput.value === 'kazanlak') {
+      showSuccess(1);
+    }
+  };
+}
+
+function drawRadarGridLines() {
+  if (!radarCtx || !radarCanvas) return;
+  const w = radarCanvas.width;
+  const h = radarCanvas.height;
+  radarCtx.clearRect(0, 0, w, h);
+  
+  radarCtx.strokeStyle = 'rgba(0, 229, 160, 0.15)';
+  radarCtx.lineWidth = 1;
+  
+  for (let r = 50; r <= 150; r += 50) {
+    radarCtx.beginPath();
+    radarCtx.arc(w/2, h/2, r, 0, Math.PI * 2);
+    radarCtx.stroke();
+  }
+  
+  radarCtx.beginPath();
+  radarCtx.moveTo(w/2, 0); radarCtx.lineTo(w/2, h);
+  radarCtx.moveTo(0, h/2); radarCtx.lineTo(w, h/2);
+  radarCtx.stroke();
+}
+
+
+// ── Module 2: CCTV Forensics Hotspot Scanner minigame ──
+let cctvScannedHotspots = {
+  tower: false,
+  sign: false,
+  bike: false
+};
+
+function initCctvM2() {
+  const progress = document.getElementById('forensics-progress-bar');
+  const log = document.getElementById('forensics-log');
+  const submitBtn = document.getElementById('btn-forensics-submit');
+  const hiddenInput = document.getElementById('input-2');
+  
+  if (!progress || !log || !submitBtn) return;
+
+  if (clearedStages.includes(2)) {
+    cctvScannedHotspots = { tower: true, sign: true, bike: true };
+    hiddenInput.value = 'paris';
+    submitBtn.disabled = false;
+    progress.style.width = '100%';
+    log.innerHTML = '<strong>GEO-READOUT MATCHED: PARIS, FRANCE (Resolved).</strong>';
+    const hotspots = ['tower', 'sign', 'bike'];
+    hotspots.forEach(id => {
+      const el = document.getElementById('hotspot-' + id);
+      if (el) el.classList.add('scanned');
+    });
+  } else {
+    cctvScannedHotspots = { tower: false, sign: false, bike: false };
+    hiddenInput.value = '';
+    submitBtn.disabled = true;
+    progress.style.width = '0%';
+    log.textContent = 'SYSTEM READY. Click on highlighted wireframe areas to analyze signals...';
+    const hotspots = ['tower', 'sign', 'bike'];
+    hotspots.forEach(id => {
+      const el = document.getElementById('hotspot-' + id);
+      if (el) el.classList.remove('scanned');
+    });
+  }
+  
+  const hotspots = ['tower', 'sign', 'bike'];
+  hotspots.forEach(id => {
+    const el = document.getElementById('hotspot-' + id);
+    if (el) {
+      el.classList.remove('scanned');
+      el.onclick = (e) => {
+        e.stopPropagation();
+        if (cctvScannedHotspots[id]) return;
+        initAudio();
+        
+        cctvScannedHotspots[id] = true;
+        el.classList.add('scanned');
+        playSuccessSound();
+        
+        let logsText = '';
+        if (id === 'tower') logsText = 'ANALYZING SIGNAL... Iron latticed frame matched: Eiffel Tower (Paris, FR). [Confidence 99.8%]';
+        if (id === 'sign') logsText = 'PARSING STREET MODEL... Road tag identified: Rue de Rivoli (Paris Registry). [Confidence 100%]';
+        if (id === 'bike') logsText = 'QUERYING DATA... Vélib\' bike sharing detected. Location matching: Paris. [Confidence 98.6%]';
+        
+        log.textContent = logsText;
+        
+        const scannedCount = Object.values(cctvScannedHotspots).filter(Boolean).length;
+        progress.style.width = (scannedCount / 3 * 100) + '%';
+        
+        if (scannedCount === 3) {
+          log.innerHTML = '<strong>GEO-READOUT MATCHED: PARIS, FRANCE (All signals aligned).</strong>';
+          submitBtn.disabled = false;
+          hiddenInput.value = 'paris';
+        }
+      };
+    }
+  });
+  
+  submitBtn.onclick = () => {
+    if (hiddenInput.value === 'paris') {
+      showSuccess(2);
+    }
+  };
+}
+
+
+// ── Final Screen Envelope Reveal ──
+function openEnvelope() {
+  const env = document.getElementById('final-envelope');
+  if (!env) return;
+  initAudio();
+  
+  if (!env.classList.contains('opened')) {
+    env.classList.add('opened');
+    playSuccessSound();
+  }
+}
