@@ -70,7 +70,7 @@ body {
   min-height: 100vh;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 24px 16px 80px; /* reserve space at the bottom for the minimized CLI header */
   position: relative;
   z-index: 2;
 }
@@ -2473,28 +2473,34 @@ body {
   left: 0;
   right: 0;
   height: 180px;
-  background: #090c10;
-  border-top: 2px solid var(--border);
+  background: rgba(14, 20, 32, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(0, 229, 160, 0.25);
   z-index: 9999;
   display: flex;
   flex-direction: column;
   font-family: var(--mono);
-  box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5), 0 -1px 0 rgba(0, 229, 160, 0.1);
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .cli-console.minimized {
   transform: translateY(140px); /* Leaves only header tab visible */
 }
 .cli-header {
   height: 40px;
-  background: #111622;
-  border-bottom: 1px solid var(--border);
+  background: rgba(17, 22, 34, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
   user-select: none;
+  transition: background 0.2s;
+}
+.cli-header:hover {
+  background: rgba(0, 229, 160, 0.04);
 }
 .cli-header-title {
   color: var(--green);
@@ -2504,10 +2510,16 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  text-shadow: 0 0 8px rgba(0, 229, 160, 0.2);
 }
 .cli-toggle-btn {
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.cli-header:hover .cli-toggle-btn {
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(0, 229, 160, 0.3);
 }
 .cli-body {
   flex-grow: 1;
@@ -2523,6 +2535,20 @@ body {
   font-size: 0.8rem;
   line-height: 1.5;
   color: #8a96a8;
+  padding-right: 8px;
+}
+.cli-logs::-webkit-scrollbar {
+  width: 4px;
+}
+.cli-logs::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cli-logs::-webkit-scrollbar-thumb {
+  background: rgba(0, 229, 160, 0.15);
+  border-radius: 2px;
+}
+.cli-logs::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 229, 160, 0.3);
 }
 .cli-log-line {
   margin-bottom: 4px;
@@ -2541,13 +2567,14 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  border-top: 1px solid var(--border-dim);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   padding-top: 8px;
 }
 .cli-prompt {
   color: var(--green);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 600;
+  text-shadow: 0 0 8px rgba(0, 229, 160, 0.2);
 }
 .cli-input {
   flex-grow: 1;
@@ -2555,8 +2582,9 @@ body {
   border: none;
   color: var(--text);
   font-family: var(--mono);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   outline: none;
+  caret-color: var(--green);
 }
 
 /* Radar lock styling (Module 1) */
@@ -2837,13 +2865,29 @@ body {
   display: none;
 }
 
-/* Push down main body slightly to prevent CLI cover overlap on short screens */
-body {
-  padding-bottom: 180px;
-}
-@media (max-width: 768px) {
-  body {
-    padding-bottom: 180px;
+/* Responsive overrides for CLI console bottom drawer on mobile */
+@media (max-width: 480px) {
+  .cli-console {
+    height: 190px;
+  }
+  .cli-console.minimized {
+    transform: translateY(150px); /* 190px - 40px = 150px visible header */
+  }
+  .cli-prompt-user {
+    display: none;
+  }
+  .cli-prompt {
+    font-size: 0.78rem;
+  }
+  .cli-input {
+    font-size: 0.78rem;
+  }
+  .cli-header-title {
+    font-size: 0.68rem;
+    letter-spacing: 0.5px;
+  }
+  .cli-toggle-btn {
+    font-size: 0.7rem;
   }
 }
 
@@ -2947,4 +2991,12 @@ body {
 .keypad-btn.enter-btn:hover {
   border-color: var(--green);
   background: var(--green-dim);
+}
+
+/* Responsive overrides for binary register puzzle on mobile */
+@media (max-width: 480px) {
+  .sumcheck-row {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
 }
