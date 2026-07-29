@@ -14,6 +14,24 @@
   <canvas id="matrixCanvas"></canvas>
   <div class="scan-line"></div>
 
+  <!-- ══ MISSION PROGRESS BAR ══ -->
+  <div id="mission-progress-bar">
+    <span class="mpb-label">OP-H1B4</span>
+    <div class="mpb-track"><div class="mpb-fill" id="mpb-fill" style="width:0%"></div></div>
+    <span class="mpb-count" id="mpb-count">0 / 19</span>
+  </div>
+
+  <!-- ══ GLITCH TRANSITION OVERLAY ══ -->
+  <div id="glitch-overlay"></div>
+
+  <!-- ══ INCOMING TRANSMISSION INTERSTITIAL ══ -->
+  <div id="transmission-overlay">
+    <div class="tx-label">⚡ Encrypted Channel Active</div>
+    <div class="tx-main" id="tx-main-text">DECRYPTING NEXT MODULE...</div>
+    <div class="tx-bar-wrap"><div class="tx-bar-fill" id="tx-bar-fill"></div></div>
+    <div class="tx-module-num" id="tx-module-num">MODULE 00</div>
+  </div>
+
   <!-- ══ BOOT SCREEN ══ -->
   <div class="screen active" id="screen-boot">
     <div class="terminal-window boot-terminal">

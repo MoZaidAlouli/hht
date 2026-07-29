@@ -63,38 +63,38 @@ const STAGE_ORDER = [
   'screen-19', 'screen-20', 'screen-final'
 ];
 
-// ── Navigate ──
-function goTo(screenId) {
+// ── Navigate (with glitch + transmission interstitial) ──
+function goTo(screenId, skipTransition) {
   localStorage.setItem('op_hiba_active_screen', screenId);
-  
+
   // Custom melody stop on navigating away from final screen
   stopFinalMelody();
 
   // Clean up running intervals / frames
-  if (waveAnimFrame) {
-    cancelAnimationFrame(waveAnimFrame);
-    waveAnimFrame = null;
-  }
-  if (specAnimFrame) {
-    cancelAnimationFrame(specAnimFrame);
-    specAnimFrame = null;
-  }
-  if (radioStaticInterval) {
-    clearInterval(radioStaticInterval);
-    radioStaticInterval = null;
-  }
-  if (matrixDecodeInterval) {
-    clearInterval(matrixDecodeInterval);
-    matrixDecodeInterval = null;
-  }
-  // Morse cleanup
-  if (morseTimer) {
-    clearTimeout(morseTimer);
-    morseTimer = null;
-  }
+  if (waveAnimFrame) { cancelAnimationFrame(waveAnimFrame); waveAnimFrame = null; }
+  if (specAnimFrame) { cancelAnimationFrame(specAnimFrame); specAnimFrame = null; }
+  if (radioStaticInterval) { clearInterval(radioStaticInterval); radioStaticInterval = null; }
+  if (matrixDecodeInterval) { clearInterval(matrixDecodeInterval); matrixDecodeInterval = null; }
+  if (morseTimer) { clearTimeout(morseTimer); morseTimer = null; }
   stopMorseBeep();
   morsePlaying = false;
 
+  // Determine if this is a module-to-module transition (show interstitial)
+  const isModuleTransition = !skipTransition && /^screen-(\d+)$/.test(screenId);
+
+  if (isModuleTransition) {
+    const moduleNum = screenId.match(/\d+/)[0];
+    triggerGlitch();
+    showTransmissionInterstitial(moduleNum, () => {
+      _activateScreen(screenId);
+    });
+  } else {
+    triggerGlitch();
+    setTimeout(() => _activateScreen(screenId), 200);
+  }
+}
+
+function _activateScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => {
     s.classList.remove('active');
     s.style.display = 'none';
@@ -106,7 +106,8 @@ function goTo(screenId) {
   target.classList.add('active');
   window.scrollTo(0, 0);
 
-  // Use requestAnimationFrame to ensure the element is laid out before initializing canvases
+  updateProgressBar();
+
   requestAnimationFrame(() => {
     if (screenId === 'screen-1') initRadarM1();
     if (screenId === 'screen-2') initCctvM2();
@@ -128,11 +129,115 @@ function goTo(screenId) {
     if (screenId === 'screen-18') initSumCheck();
     if (screenId === 'screen-19') initLogAuditing();
     if (screenId === 'screen-20') initKeyring();
-    if (screenId === 'screen-final') {
-      initFinalScreen();
-      startFinalMelody();
-    }
+    if (screenId === 'screen-final') { initFinalScreen(); startFinalMelody(); }
+
+    // Trigger typewriter on all .narr elements in the new screen
+    typewriteScreen(target);
   });
+}
+
+// ── Glitch overlay ──
+function triggerGlitch() {
+  const el = document.getElementById('glitch-overlay');
+  if (!el) return;
+  el.classList.remove('active');
+  void el.offsetWidth;
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), 500);
+}
+
+// ── Transmission interstitial ──
+function showTransmissionInterstitial(moduleNum, callback) {
+  const overlay = document.getElementById('transmission-overlay');
+  const mainTxt = document.getElementById('tx-main-text');
+  const modNum  = document.getElementById('tx-module-num');
+  const bar     = document.getElementById('tx-bar-fill');
+  if (!overlay) { callback(); return; }
+
+  const pad = n => String(n).padStart(2, '0');
+  mainTxt.textContent = 'DECRYPTING NEXT MODULE...';
+  modNum.textContent  = 'MODULE ' + pad(moduleNum) + ' / 19';
+
+  // Reset bar animation
+  bar.style.animation = 'none';
+  void bar.offsetWidth;
+  bar.style.animation = '';
+
+  overlay.classList.add('active');
+
+  setTimeout(() => {
+    overlay.classList.remove('active');
+    setTimeout(callback, 160);
+  }, 1250);
+}
+
+// ── Progress bar ──
+function updateProgressBar() {
+  const bar   = document.getElementById('mpb-fill');
+  const count = document.getElementById('mpb-count');
+  const pb    = document.getElementById('mission-progress-bar');
+  if (!bar || !count || !pb) return;
+
+  const total = 19;
+  const done  = clearedStages.length;
+  const pct   = Math.round((done / total) * 100);
+
+  bar.style.width = pct + '%';
+  count.textContent = done + ' / ' + total;
+
+  // Show bar on any non-boot/non-intro screen
+  const active = document.querySelector('.screen.active');
+  if (active && active.id !== 'screen-boot') {
+    pb.classList.add('visible');
+  } else {
+    pb.classList.remove('visible');
+  }
+}
+
+// ── Typewriter effect on .narr elements ──
+function typewriteScreen(screenEl) {
+  const narrs = screenEl.querySelectorAll('.narr');
+  narrs.forEach((el, i) => {
+    const original = el.innerHTML;
+    el.innerHTML = '';
+    el.classList.add('typing');
+
+    const delay = i * 320;
+    setTimeout(() => {
+      // Use a character-by-character approach safely with HTML
+      const text = el.textContent; // already empty, will use original
+      // For safety, restore and do opacity reveal instead of char-by-char (preserves HTML tags)
+      el.innerHTML = original;
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(6px)';
+      el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        });
+      });
+      setTimeout(() => el.classList.remove('typing'), 1800);
+    }, delay);
+  });
+}
+
+// ── Particle burst ──
+function spawnParticles(x, y) {
+  const colors = ['#00e5a0', '#3d9eff', '#f0a500', '#ffffff'];
+  const count = 18;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.5;
+    const dist  = 60 + Math.random() * 80;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist - 40;
+    const dur = (0.6 + Math.random() * 0.4).toFixed(2);
+    p.style.cssText = `left:${x}px;top:${y}px;background:${colors[i%colors.length]};--tx:${tx}px;--ty:${ty}px;--dur:${dur}s`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), parseFloat(dur) * 1000 + 100);
+  }
 }
 
 // ── Hint ──
@@ -182,11 +287,18 @@ function check(stage) {
 function showSuccess(stage) {
   playSuccessSound();
 
+  // Particle burst from submit button or input position
+  const submitBtn = document.querySelector('.screen.active .btn-primary');
+  if (submitBtn) {
+    const r = submitBtn.getBoundingClientRect();
+    spawnParticles(r.left + r.width / 2, r.top + r.height / 2);
+  }
+
   // Highlight active window with green pulse
   const activeWin = document.querySelector('.screen.active .terminal-window');
   if (activeWin) {
     activeWin.classList.remove('success-pulse');
-    void activeWin.offsetWidth; // trigger reflow
+    void activeWin.offsetWidth;
     activeWin.classList.add('success-pulse');
   }
 
@@ -209,6 +321,9 @@ function showSuccess(stage) {
     kc.classList.remove('hidden');
   }
 
+  // Update progress bar immediately
+  updateProgressBar();
+
   setTimeout(() => {
     const currentIndex = STAGE_ORDER.indexOf('screen-' + stage);
     if (currentIndex !== -1 && currentIndex + 1 < STAGE_ORDER.length) {
@@ -221,13 +336,15 @@ function showSuccess(stage) {
 function showError(stage, msg) {
   playErrorSound();
 
-  // Shake terminal window on error
+  // Shake + red flash on error
   const activeWin = document.querySelector('.screen.active .terminal-window');
   if (activeWin) {
-    activeWin.classList.remove('shake-anim');
-    void activeWin.offsetWidth; // trigger reflow
-    activeWin.classList.add('shake-anim');
-    setTimeout(() => activeWin.classList.remove('shake-anim'), 500);
+    activeWin.classList.remove('shake-anim', 'error-flash');
+    void activeWin.offsetWidth;
+    activeWin.classList.add('shake-anim', 'error-flash');
+    setTimeout(() => {
+      activeWin.classList.remove('shake-anim', 'error-flash');
+    }, 550);
   }
 
   const fb = document.getElementById('feedback-' + stage);
@@ -1947,11 +2064,14 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Update progress bar with restored state
+  updateProgressBar();
+
   const savedScreen = localStorage.getItem('op_hiba_active_screen');
   if (savedScreen && savedScreen !== 'screen-boot') {
-    goTo(savedScreen);
+    goTo(savedScreen, true); // skipTransition=true on initial load
   } else {
-    goTo('screen-boot');
+    goTo('screen-boot', true);
   }
 });
 
